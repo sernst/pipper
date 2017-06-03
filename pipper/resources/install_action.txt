@@ -1,0 +1,2 @@
+The install command functions in a similar fashion to pip's install command.
+First pip is used to determine the current

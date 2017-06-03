@@ -1,0 +1,3 @@
+AWS credentials profile to use for remote authentication and access. If no
+profile is specified, the default profile will be used. The profile flag is
+ignored if credentials are specified explicitly using the --credentials flag.
