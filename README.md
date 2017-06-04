@@ -25,21 +25,11 @@ sub-command actions. The general format of a pipper command is:
 
 The available actions are:
 
- * [install](#Install-Action): add or update new packages
- * [download](#Download-Action): save remote packages locally
- * [info](#Info-Action): information on a specific package
- * [bundle](#Bundle-Action): bundle a package for publishing
- * [publish](#Publish-Action): release a new or updated package
-
-    pipper download some_package
-    pipper download -i pipper.json
-        -d ~/target/directory
-
-    pipper info PACKAGE_NAME
-
-    pipper bundle .
-
-    pipper publish
+ * [install](#install-action): add or update new packages
+ * [download](#download-action): save remote packages locally
+ * [info](#info-action): information on a specific package
+ * [bundle](#bundle-action): bundle a package for publishing
+ * [publish](#publish-action): release a new or updated package
 
     
 ## AWS Credentials
@@ -103,6 +93,25 @@ Install during docker build
 Install during Gitlab CI
 
 
+## Download Action
+
+    $ pipper download some_package
+
+    $ pipper download -i pipper.json
+        -d ~/target/directory
+
+
+## Info Action
+
+    $ pipper info <PACKAGE_NAME>
+
+* `-l --local`
+
+    Only display local package information, which can be useful if you're
+    just looking for what is installed locally and don't want to provide
+    AWS credential information as well.
+
+
 ## Bundle Action
 
 
@@ -113,9 +122,18 @@ Install during Gitlab CI
     The directory where the pipper bundle should be saved. Defaults to the 
     current working directory.
     
+    
 ## Publish Action
 
     $ pipper publish <PIPPER_FILENAME>
     
     $ pipper publish <DIRECTORY_CONTAINING_PIPPER_FILE>
 
+* `-b --bucket <BUCKET_NAME>`
+    
+    Name of the S3 bucket where the package will be published.
+
+* `-f --force`
+    
+    Unless this flag is specified, publishing a package will be skipped if an
+    identical version of the package has already been published.

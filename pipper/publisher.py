@@ -1,30 +1,20 @@
 import os
 import zipfile
 import json
+
+from pipper import s3
+from pipper import versioning
 from pipper.environment import Environment
 
 
-def make_s3_key(metadata: dict) -> str:
+def is_already_published(env: Environment, metadata: dict) -> bool:
     """ """
 
-    return 'pipper/{}/{}.pipper'.format(
-        metadata['name'],
-        metadata['safe_version']
+    return s3.key_exists(
+        s3_client=env.s3_client,
+        bucket=env.args.get('bucket'),
+        key=versioning.make_s3_key(metadata['name'], metadata['version'])
     )
-
-
-def is_already_published(s3_client, metadata: dict) -> bool:
-    """ """
-
-    try:
-        response = s3_client.list_objects(
-            Bucket=metadata['bucket'],
-            Prefix=make_s3_key(metadata),
-            MaxKeys=1
-        )
-        return len(response['Contents']) > 0
-    except Exception:
-        return False
 
 
 def read_metadata(bundle_path: str) -> dict:
@@ -63,7 +53,7 @@ def from_pipper_file(env: Environment, bundle_path: str):
     print('[SYNCING]: "{}"'.format(metadata['name']))
 
     force = env.args.get('force')
-    if not force and is_already_published(env.s3_client, metadata):
+    if not force and is_already_published(env, metadata):
         print('[SKIPPED]: "{}" version {} is already published'.format(
             metadata['name'],
             metadata['version']
@@ -79,8 +69,11 @@ def from_pipper_file(env: Environment, bundle_path: str):
         env.s3_client.put_object(
             ACL='private',
             Body=f,
-            Bucket=metadata['bucket'],
-            Key=make_s3_key(metadata),
+            Bucket=env.args.get('bucket'),
+            Key=versioning.make_s3_key(
+                metadata['name'],
+                metadata['version']
+            ),
             ContentType='application/zip',
             Metadata={
                 'package': json.dumps(metadata),

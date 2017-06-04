@@ -1,8 +1,7 @@
 import os
-import typing
 
+import typing
 from boto3.session import Session
-from botocore.client import BaseClient
 
 
 def session_from_credentials_list(
@@ -10,7 +9,12 @@ def session_from_credentials_list(
 ) -> typing.Union[Session, None]:
     """ """
 
-    is_valid = len(credentials) > 1 and credentials[0] and credentials[1]
+    is_valid = (
+        credentials and
+        len(credentials) > 1 and
+        credentials[0] and
+        credentials[1]
+    )
 
     if not is_valid:
         return None
@@ -56,7 +60,15 @@ def get_session(
     return next(s for s in generate_session() if s is not None)
 
 
-def upload(s3_client: BaseClient, bundle_path: str):
+def key_exists(s3_client, bucket: str, key: str) -> bool:
     """ """
 
-
+    try:
+        response = s3_client.list_objects(
+            Bucket=bucket,
+            Prefix=key,
+            MaxKeys=1
+        )
+        return len(response['Contents']) > 0
+    except Exception:
+        return False

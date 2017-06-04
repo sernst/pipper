@@ -2,15 +2,16 @@ from pipper import parser
 from pipper import installer
 from pipper import bundler
 from pipper import publisher
+from pipper import info
 from pipper.environment import Environment
 
 
 ACTIONS = dict(
     install=installer.run,
     bundle=bundler.run,
-    publish=publisher.run
+    publish=publisher.run,
+    info=info.run
 )
-
 
 
 def run(cli_args: list = None):
@@ -26,7 +27,7 @@ def run(cli_args: list = None):
         args['parser'].print_help()
         raise ValueError(message)
 
-    print('\n\n=== {} ==='.format(env.action.upper()))
+    print('\n\n=== {} ===\n'.format(env.action.upper()))
 
     try:
         action(env)

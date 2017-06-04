@@ -85,6 +85,7 @@ def create_meta(
 
     metadata.update(dict(
         name=distribution_data['package_name'],
+        wheel_name=distribution_data['wheel_name'],
         version=distribution_data['version'],
         safe_version=distribution_data['safe_version'],
         timestamp=datetime.utcnow().isoformat()
@@ -131,11 +132,13 @@ def create_wheel(package_directory: str, bundle_directory: str) -> dict:
         for name in os.listdir(bundle_directory)
         if name.endswith('.whl')
     ]
+    wheel_filename = wheel_files[0]
     wheel_path = os.path.join(bundle_directory, 'package.whl')
-    shutil.move(os.path.join(bundle_directory, wheel_files[0]), wheel_path)
+    shutil.move(os.path.join(bundle_directory, wheel_filename), wheel_path)
 
     return dict(
         wheel_path=wheel_path,
+        wheel_name=wheel_filename,
         package_name=result.get_name(),
         version=result.get_version(),
         safe_version=versioning.serialize(result.get_version())
@@ -174,9 +177,13 @@ def run(env: Environment) -> str:
     bundle_directory = tempfile.mkdtemp(prefix='pipper-bundle-')
 
     try:
+        print('[COMPILE]: Creating universal wheel')
         distribution_data = create_wheel(directory, bundle_directory)
+        print('[COLLECT]: Creating package metadata')
         create_meta(directory, bundle_directory, distribution_data)
-        return zip_bundle(bundle_directory, save_directory, distribution_data)
+        print('[ASSEMBLE]: Creating pipper package bundle')
+        path = zip_bundle(bundle_directory, save_directory, distribution_data)
+        print('[BUNDLED]:', path)
     except Exception:
         raise
     finally:

@@ -31,3 +31,15 @@ def deserialize(version: str) -> str:
         .replace('-p-', '-')
         .replace('-b-', '+')
     )
+
+
+def make_s3_key(package_name: str, package_version: str) -> str:
+    """ """
+
+    safe_version = (
+        serialize(package_version)
+        if not package_version.startswith('v') else
+        package_version
+    )
+
+    return 'pipper/{}/{}.pipper'.format(package_name, safe_version)

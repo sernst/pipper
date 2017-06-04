@@ -1,22 +1,27 @@
 import pip
 import semver
 import pkg_resources
-from urllib.parse import urlparse
 
 from pipper import downloader
 
+from pipper import versioning
 
 
-def update_required(wheel_url: str) -> bool:
+def update_required(package_name: str, install_version: str) -> bool:
     """ """
 
-    data = parse_url(wheel_url)
-    existing = status(data['package_name'])
+    existing = status(package_name)
 
     if not existing:
         return True
 
-    result = semver.compare(data['version'], existing.version)
+    version = (
+        versioning.deserialize(install_version)
+        if install_version.startswith('v') else
+        install_version
+    )
+
+    result = semver.compare(version, existing.version)
     return result != 0
 
 
@@ -31,14 +36,7 @@ def status(package_name: str):
         raise
 
 
-def install(package_name: str):
+def install_wheel(wheel_path: str):
     """ """
 
-    pip.main(['install', package_name])
-
-
-def install_wheel(wheel_url: str):
-    """ """
-
-    wheel_path = downloader.to_temp_file(wheel_url)
-    install(wheel_path)
+    pip.main(['install', wheel_path])

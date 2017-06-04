@@ -11,6 +11,7 @@ def read_file(*args) -> str:
     with open(path, 'r') as f:
         return f.read()
 
+
 def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
 
     parser.add_argument(
@@ -25,6 +26,12 @@ def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
         nargs=2,
         default=[],
         help=''
+    )
+
+    parser.add_argument(
+        '-b', '--bucket',
+        dest='bucket',
+        help='Name of the bucket containing the pipper packages'
     )
 
     return parser
@@ -83,6 +90,35 @@ def populate_publish(parser: ArgumentParser) -> ArgumentParser:
     return populate_with_credentials(parser)
 
 
+def populate_info(parser: ArgumentParser) -> ArgumentParser:
+    """ """
+
+    parser.description = read_file('resources', 'info_action.txt')
+
+    parser.add_argument(
+        'package_name',
+        help='Name of the package about which to retrieve information'
+    )
+
+    parser.add_argument(
+        '-l', '--local',
+        dest='local_only',
+        action='store_true',
+        default=False,
+        help='Only get local package information'
+    )
+
+    parser.add_argument(
+        '-r', '--remote',
+        dest='remote_only',
+        action='store_true',
+        default=False,
+        help='Only get remote package information'
+    )
+
+    return populate_with_credentials(parser)
+
+
 def parse(cli_args: list = None) -> dict:
     """ """
 
@@ -96,6 +132,7 @@ def parse(cli_args: list = None) -> dict:
     populate_install(subparsers.add_parser('install'))
     populate_bundle(subparsers.add_parser('bundle'))
     populate_publish(subparsers.add_parser('publish'))
+    populate_info(subparsers.add_parser('info'))
 
     out = vars(parser.parse_args(cli_args))
     out['parser'] = parser
