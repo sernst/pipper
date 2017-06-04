@@ -1,6 +1,6 @@
 import typing
 from pipper import wrapper
-
+from pipper.environment import Environment
 
 def install(package: str):
     """ 
@@ -29,5 +29,7 @@ def install_many(packages: typing.List[str]):
     return [install(p) for p in packages]
 
 
-def install_from_args(**kwargs):
+def run(env: Environment):
     """ """
+
+    print(env)

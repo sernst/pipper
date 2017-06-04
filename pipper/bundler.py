@@ -9,6 +9,9 @@ from distutils.core import run_setup
 
 from setuptools.dist import Distribution
 
+from pipper.environment import Environment
+from pipper import versioning
+
 
 def zip_bundle(
         bundle_directory: str,
@@ -36,16 +39,14 @@ def zip_bundle(
 
     filename = '{}-{}.pipper'.format(
         distribution_data['package_name'],
-        distribution_data['version'].replace('.', '-')
+        distribution_data['safe_version']
     )
     zip_path = os.path.join(output_directory, filename)
 
-    zipper = zipfile.ZipFile(zip_path, mode='w')
-
-    for filename in os.listdir(bundle_directory):
-        path = os.path.join(bundle_directory, filename)
-        zipper.write(path, filename)
-    zipper.close()
+    with zipfile.ZipFile(zip_path, mode='w') as zipper:
+        for filename in os.listdir(bundle_directory):
+            path = os.path.join(bundle_directory, filename)
+            zipper.write(path, filename)
 
     return zip_path
 
@@ -73,11 +74,21 @@ def create_meta(
         The absolute path to the created metadata file is returned.
     """
 
-    metadata = dict(
+    config_path = os.path.join(package_directory, 'pipper.json')
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(
+            'Missing pipper config file at "{}"'.format(config_path)
+        )
+
+    with open(config_path, 'r') as f:
+        metadata = json.load(f)  # type: dict
+
+    metadata.update(dict(
         name=distribution_data['package_name'],
         version=distribution_data['version'],
+        safe_version=distribution_data['safe_version'],
         timestamp=datetime.utcnow().isoformat()
-    )
+    ))
 
     path = os.path.join(bundle_directory, 'package.meta')
 
@@ -107,10 +118,10 @@ def create_wheel(package_directory: str, bundle_directory: str) -> dict:
     if not os.path.exists(setup_path):
         raise FileNotFoundError('No setup.py at "{}"'.format(setup_path))
 
-    result: Distribution = run_setup(
+    result = run_setup(
         script_name=setup_path,
         script_args=['bdist_wheel', '--universal', '-d', bundle_directory]
-    )
+    )  # type: Distribution
 
     # Pause to make sure OS releases wheel file before moving it
     time.sleep(1)
@@ -126,15 +137,12 @@ def create_wheel(package_directory: str, bundle_directory: str) -> dict:
     return dict(
         wheel_path=wheel_path,
         package_name=result.get_name(),
-        version=result.get_version()
+        version=result.get_version(),
+        safe_version=versioning.serialize(result.get_version())
     )
 
 
-def run(
-        package_directory: str = '.',
-        output_directory: str = None,
-        **kwargs
-) -> str:
+def run(env: Environment) -> str:
     """ 
     Executes the bundling process on the specified package directory and saves
     the pipper bundle file in the specified output directory.
@@ -149,6 +157,9 @@ def run(
     :return
         The absolute path to the location of the created bundle file.
     """
+
+    package_directory = env.args.get('package_directory') or '.'
+    output_directory = env.args.get('output_directory')
 
     directory = os.path.realpath(package_directory)
     if not os.path.exists(directory):

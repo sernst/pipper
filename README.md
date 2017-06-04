@@ -113,3 +113,9 @@ Install during Gitlab CI
     The directory where the pipper bundle should be saved. Defaults to the 
     current working directory.
     
+## Publish Action
+
+    $ pipper publish <PIPPER_FILENAME>
+    
+    $ pipper publish <DIRECTORY_CONTAINING_PIPPER_FILE>
+

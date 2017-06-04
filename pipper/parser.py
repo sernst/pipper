@@ -11,6 +11,24 @@ def read_file(*args) -> str:
     with open(path, 'r') as f:
         return f.read()
 
+def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
+
+    parser.add_argument(
+        '-p', '--profile',
+        dest='aws_profile',
+        help=read_file('resources', 'profile_flag.txt')
+    )
+
+    parser.add_argument(
+        '-c', '--credentials',
+        dest='aws_credentials',
+        nargs=2,
+        default=[],
+        help=''
+    )
+
+    return parser
+
 
 def populate_install(parser: ArgumentParser) -> ArgumentParser:
     """ """
@@ -27,7 +45,7 @@ def populate_install(parser: ArgumentParser) -> ArgumentParser:
         dest='package_path'
     )
 
-    return parser
+    return populate_with_credentials(parser)
 
 
 def populate_bundle(parser: ArgumentParser) -> ArgumentParser:
@@ -44,6 +62,27 @@ def populate_bundle(parser: ArgumentParser) -> ArgumentParser:
     return parser
 
 
+def populate_publish(parser: ArgumentParser) -> ArgumentParser:
+    """ """
+
+    parser.description = read_file('resources', 'publish_action.txt')
+
+    parser.add_argument(
+        'target_path',
+        help='Path of the pipper file or directory containing the pipper file'
+    )
+
+    parser.add_argument(
+        '-f', '--force',
+        dest='force',
+        action='store_true',
+        default=False,
+        help='Force publishing even if the version has already been published'
+    )
+
+    return populate_with_credentials(parser)
+
+
 def parse(cli_args: list = None) -> dict:
     """ """
 
@@ -52,24 +91,12 @@ def parse(cli_args: list = None) -> dict:
         add_help=True
     )
 
-    parser.add_argument(
-        '-p', '--profile',
-        dest='aws_profile',
-        default='default',
-        help=read_file('resources', 'profile_flag.txt')
-    )
-
-    parser.add_argument(
-        '-c', '--credentials',
-        dest='credentials',
-        nargs=2,
-        default=None,
-        help=''
-    )
-
     subparsers = parser.add_subparsers(help='Command actions', dest='action')
 
     populate_install(subparsers.add_parser('install'))
     populate_bundle(subparsers.add_parser('bundle'))
+    populate_publish(subparsers.add_parser('publish'))
 
-    return vars(parser.parse_args(cli_args))
+    out = vars(parser.parse_args(cli_args))
+    out['parser'] = parser
+    return out
