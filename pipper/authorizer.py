@@ -1,10 +1,44 @@
 import os
 import json
+import re
 from urllib.parse import urlparse
+from datetime import timedelta
 
 from pipper import downloader
 from pipper import environment
 from pipper.environment import Environment
+
+
+DELTA_REGEX = re.compile('(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]+)')
+
+
+def to_time_delta(age: str) -> timedelta:
+    """ 
+    Converts an age string into a timedelta object, parsing the number and 
+    units of the age. Valid units are:
+        * hour, hrs, hr, h
+        * minutes, mins, min, m
+        * seconds, secs, sec, s
+
+    Examples:
+        1s -> 1 second
+        24mins -> 24 minutes
+        3hours -> 3 hours
+    """
+
+    try:
+        result = DELTA_REGEX.search(age)
+        unit = result.group('unit').lower()
+        number = int(result.group('number'))
+    except Exception:
+        unit = 's'
+        number = 600
+
+    return timedelta(
+        hours=number if unit.startswith('h') else 0,
+        minutes=number if unit.startswith('m') else 0,
+        seconds=number if unit.startswith('s') else 0
+    )
 
 
 def parse_url(pipper_url: str) -> dict:
@@ -28,11 +62,12 @@ def create_url(env: Environment, package_id: str) -> str:
     """ """
 
     data = downloader.parse_package_id(env, package_id)
+    delta = to_time_delta(env.args.get('expires_in'))
 
     url = env.s3_client.generate_presigned_url(
         ClientMethod='get_object',
-        ExpiresIn=24 * 3600 * env.args.get('minutes_to_live'),
-        Params={'Bucket': 'pipper-wiw', 'Key': data['key']}
+        ExpiresIn=int(delta.total_seconds()),
+        Params={'Bucket': env.bucket, 'Key': data['key']}
     )
 
     print('[AUTHORIZED]: {} -> {}'.format(data['name'], url))

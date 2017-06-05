@@ -41,7 +41,7 @@ def populate_extra_files():
 setup(
     name=PACKAGE_NAME,
     version=settings['version'],
-    description='Expanded package management',
+    description='Private package management on an S3 bucket',
     url='https://github.com/sernst/pipper',
     author='Scott Ernst',
     author_email='swernst@gmail.com',
@@ -56,8 +56,9 @@ setup(
         ]
     ),
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6'
     ],
     install_requires=['pip', 'requests', 'wheel', 'setuptools', 'semver']

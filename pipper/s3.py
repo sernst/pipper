@@ -32,32 +32,15 @@ def session_from_credentials_list(
     )
 
 
-def get_session(
-        aws_profile: str = None,
-        aws_credentials: typing.List[str] = None
-) -> Session:
+def session_from_profile_name(
+        profile_name: typing.Union[str, None]
+) -> typing.Union[Session, None]:
     """ """
 
-    specific_credentials = [
-        os.environ.get('PIPPER_AWS_ACCESS_KEY_ID'),
-        os.environ.get('PIPPER_AWS_SECRET_ACCESS_KEY'),
-        os.environ.get('PIPPER_AWS_SESSION_TOKEN')
-    ]
+    if not profile_name:
+        return None
 
-    env_credentials = [
-        os.environ.get('AWS_ACCESS_KEY_ID'),
-        os.environ.get('AWS_SECRET_ACCESS_KEY'),
-        os.environ.get('AWS_SESSION_TOKEN')
-    ]
-
-    def generate_session():
-        yield Session(profile_name=aws_profile) if aws_profile else None
-        yield session_from_credentials_list(aws_credentials)
-        yield session_from_credentials_list(specific_credentials)
-        yield session_from_credentials_list(env_credentials)
-        yield Session()
-
-    return next(s for s in generate_session() if s is not None)
+    return Session(profile_name=profile_name)
 
 
 def key_exists(s3_client, bucket: str, key: str) -> bool:

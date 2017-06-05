@@ -15,6 +15,11 @@ def read_file(*args) -> str:
 def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
 
     parser.add_argument(
+        '-r', '--repository',
+        dest='repository_name',
+    )
+
+    parser.add_argument(
         '-p', '--profile',
         dest='aws_profile',
         help=read_file('resources', 'profile_flag.txt')
@@ -116,14 +121,6 @@ def populate_info(parser: ArgumentParser) -> ArgumentParser:
         help='Only get local package information'
     )
 
-    parser.add_argument(
-        '-r', '--remote',
-        dest='remote_only',
-        action='store_true',
-        default=False,
-        help='Only get remote package information'
-    )
-
     return populate_with_credentials(parser)
 
 
@@ -147,7 +144,53 @@ def populate_download(parser: ArgumentParser) -> ArgumentParser:
         dest='configs_path'
     )
 
+    parser.add_argument(
+        '-e', '--extract',
+        dest='extract',
+        action='store_true',
+        default=False
+    )
+
     return populate_with_credentials(parser)
+
+
+def populate_repository(parser: ArgumentParser) -> ArgumentParser:
+    """ """
+
+    subparsers = parser.add_subparsers(
+        help='Repository actions',
+        dest='repository_action'
+    )
+
+    remove_parser = subparsers.add_parser('remove')
+    remove_parser.add_argument('repository_profile_name')
+
+    exists_parser = subparsers.add_parser('exists')
+    exists_parser.add_argument('repository_profile_name')
+
+    subparsers.add_parser('list')
+
+    add_parser = subparsers.add_parser('add')
+    add_parser.add_argument('repository_profile_name')
+    add_parser.add_argument(
+        '-d', '--default',
+        dest='default',
+        action='store_true',
+        default=False
+    )
+    populate_with_credentials(add_parser)
+
+    modify_parser = subparsers.add_parser('modify')
+    modify_parser.add_argument('repository_profile_name')
+    modify_parser.add_argument(
+        '-d', '--default',
+        dest='default',
+        action='store_true',
+        default=False
+    )
+    populate_with_credentials(modify_parser)
+
+    return parser
 
 
 def populate_authorize(parser: ArgumentParser) -> ArgumentParser:
@@ -171,8 +214,8 @@ def populate_authorize(parser: ArgumentParser) -> ArgumentParser:
     )
 
     parser.add_argument(
-        '-l', '--lifetime',
-        dest='minutes_to_live',
+        '-e', '--expires',
+        dest='expires_in',
         default=10
     )
 
@@ -195,6 +238,7 @@ def parse(cli_args: list = None) -> dict:
     populate_info(subparsers.add_parser('info'))
     populate_download(subparsers.add_parser('download'))
     populate_authorize(subparsers.add_parser('authorize'))
+    populate_repository(subparsers.add_parser('repository'))
 
     out = vars(parser.parse_args(cli_args))
     out['parser'] = parser

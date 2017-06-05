@@ -1,12 +1,34 @@
 import os
+import json
+import zipfile
+import shutil
+from urllib.parse import urlparse
+from contextlib import closing
 
 import requests
-
 from pipper import environment
 from pipper import info
 from pipper import versioning
 from pipper import wrapper
 from pipper.environment import Environment
+
+
+def parse_package_url(package_url: str) -> dict:
+    """ """
+
+    url_data = urlparse(package_url)
+    parts = url_data.path.strip('/').split('/')
+    filename = parts[-1]
+    safe_version = filename.rsplit('.', 1)[0]
+
+    return dict(
+        url=package_url,
+        bucket=parts[0],
+        name=parts[-2],
+        safe_version=safe_version,
+        version=versioning.deserialize(safe_version),
+        key='/'.join(parts[1:])
+    )
 
 
 def parse_package_id(env: Environment, package_id: str) -> dict:
@@ -34,6 +56,9 @@ def parse_package_id(env: Environment, package_id: str) -> dict:
                     package name and version reside
     """
 
+    if package_id.startswith('https://'):
+        return parse_package_url(package_id)
+
     package_parts = package_id.split(':')
     name = package_parts[0]
     upgrade = env.args.get('upgrade')
@@ -50,7 +75,7 @@ def parse_package_id(env: Environment, package_id: str) -> dict:
     return dict(
         name=name,
         version=version,
-        bucket=env.args.get('bucket'),
+        bucket=env.bucket,
         key=versioning.make_s3_key(name, version)
     )
 
@@ -59,14 +84,53 @@ def save(url: str, local_path: str) -> str:
     """ 
     """
 
-    response = requests.get(url)
-    with open(local_path, 'wb') as f:
+    with closing(requests.get(url, stream=True)) as response:
+        if response.status_code != 200:
+            print((
+                '[ERROR]: Unable to download remote package. Has your'
+                'authorized URL expired? Is there internet connectivity?'
+            ))
 
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
+        with open(local_path, 'wb') as f:
+            for chunk in response:
                 f.write(chunk)
+                f.flush()
+                os.fsync(f.fileno())
 
     return local_path
+
+
+def extract_pipper_file(
+        local_bundle_path: str,
+        extract_directory: str = None
+) -> dict:
+    """ """
+
+    directory = extract_directory or os.path.dirname(local_bundle_path)
+
+    with zipfile.ZipFile(local_bundle_path, 'r') as zipper:
+        contents = zipper.read('package.meta')
+
+    metadata = json.loads(contents)
+    wheel_path = os.path.join(directory, metadata['wheel_name'])
+    metadata_path = os.path.join(
+        directory,
+        '{}.meta.json'.format(metadata['wheel_name'])
+    )
+
+    with open(metadata_path, 'w') as f:
+        json.dump(metadata, f)
+
+    with zipfile.ZipFile(local_bundle_path, 'r') as zipper:
+        zipper.extract('package.whl', directory)
+        shutil.move(os.path.join(directory, 'package.whl'), wheel_path)
+
+    return dict(
+        meta_path=metadata_path,
+        wheel_path=wheel_path,
+        metadata=metadata,
+        bundle_path=local_bundle_path
+    )
 
 
 def download_package(env: Environment, package_id: str) -> str:
@@ -80,13 +144,24 @@ def download_package(env: Environment, package_id: str) -> str:
         data['version']
     ))
 
-    env.s3_client.download_file(
-        Bucket=data['bucket'],
-        Key=data['key'],
-        Filename=path
-    )
+    if 'url' in data:
+        save(package_id, path)
+    else:
+        env.s3_client.download_file(
+            Bucket=data['bucket'],
+            Key=data['key'],
+            Filename=path
+        )
 
     print('[DOWNLOADED]: {} -> {}'.format(data['name'], path))
+
+    if env.args.get('extract'):
+        paths = extract_pipper_file(path, directory)
+        print(
+            '[EXTRACTED]:',
+            '\n  *', paths['wheel_path'],
+            '\n  *', paths['meta_path']
+        )
 
     return path
 

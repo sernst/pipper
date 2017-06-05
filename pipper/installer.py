@@ -1,15 +1,13 @@
-import os
-import typing
-import tempfile
-import shutil
 import json
-import zipfile
+import os
+import shutil
+import tempfile
+import typing
 
-from pipper import wrapper
-from pipper import info
-from pipper import s3
 from pipper import downloader
 from pipper import environment
+from pipper import s3
+from pipper import wrapper
 from pipper.environment import Environment
 
 
@@ -26,20 +24,15 @@ def install_pipper_file(local_source_path: str) -> dict:
 
     directory = tempfile.mkdtemp(prefix='pipper-install-')
 
-    with zipfile.ZipFile(local_source_path, 'r') as zipper:
-        contents = zipper.read('package.meta')
+    extracted = downloader.extract_pipper_file(
+        local_source_path,
+        directory
+    )
 
-    metadata = json.loads(contents)
-    wheel_path = os.path.join(directory, metadata['wheel_name'])
-
-    with zipfile.ZipFile(local_source_path, 'r') as zipper:
-        zipper.extract('package.whl', directory)
-        shutil.copy2(os.path.join(directory, 'package.whl'), wheel_path)
-
-    wrapper.install_wheel(wheel_path)
+    wrapper.install_wheel(extracted['wheel_path'])
     shutil.rmtree(directory)
 
-    return metadata
+    return extracted['metadata']
 
 
 def install_dependencies(env: Environment, dependencies: typing.List[str]):
@@ -76,6 +69,7 @@ def install(env: Environment, package_id: str):
 
     upgrade = env.args.get('upgrade')
     data = downloader.parse_package_id(env, package_id)
+    is_url = 'url' in data
 
     if not upgrade and wrapper.status(data['name']):
         print((
@@ -85,13 +79,6 @@ def install(env: Environment, package_id: str):
         ).format(data['name']))
         return
 
-    if not s3.key_exists(env.s3_client, data['bucket'], data['key']):
-        print('[ERROR]: Version {} not available for {} package'.format(
-            data['version'],
-            data['name']
-        ))
-        return
-
     if not wrapper.update_required(data['name'], data['version']):
         print('[SKIPPED]: "{}" already installed at version {}'.format(
             data['name'],
@@ -99,14 +86,32 @@ def install(env: Environment, package_id: str):
         ))
         return
 
+    remote_version_exists = (
+        is_url or
+        s3.key_exists(env.s3_client, data['bucket'], data['key'])
+    )
+
+    if not remote_version_exists:
+        print('[ERROR]: Version {} not available for {} package'.format(
+            data['version'],
+            data['name']
+        ))
+        return
+
     directory = tempfile.mkdtemp(prefix='pipper-download-')
     path = os.path.join(directory, 'package.pipper')
 
-    env.s3_client.download_file(
-        Bucket=data['bucket'],
-        Key=data['key'],
-        Filename=path
-    )
+    if is_url:
+        downloader.save(package_id, path)
+    else:
+        env.s3_client.download_file(
+            Bucket=data['bucket'],
+            Key=data['key'],
+            Filename=path
+        )
+
+    print('DOWNLOAD PATH:', os.path.exists(path), path)
+
 
     try:
         metadata = install_pipper_file(path)

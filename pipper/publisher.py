@@ -12,7 +12,7 @@ def is_already_published(env: Environment, metadata: dict) -> bool:
 
     return s3.key_exists(
         s3_client=env.s3_client,
-        bucket=env.args.get('bucket'),
+        bucket=env.bucket,
         key=versioning.make_s3_key(metadata['name'], metadata['version'])
     )
 
@@ -65,16 +65,19 @@ def from_pipper_file(env: Environment, bundle_path: str):
         metadata['version']
     ))
 
+    content_length = os.path.getsize(bundle_path)
+
     with open(bundle_path, 'rb') as f:
         env.s3_client.put_object(
             ACL='private',
             Body=f,
-            Bucket=env.args.get('bucket'),
+            Bucket=env.bucket,
             Key=versioning.make_s3_key(
                 metadata['name'],
                 metadata['version']
             ),
             ContentType='application/zip',
+            ContentLength=content_length,
             Metadata={
                 'package': json.dumps(metadata),
                 'version': metadata['version'],

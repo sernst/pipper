@@ -20,7 +20,7 @@ def list_remote_package_keys(
 
     for i in range(1000):
         list_kwargs = dict(
-            Bucket=env.args.get('bucket'),
+            Bucket=env.bucket,
             Prefix='pipper/{}'.format(package_name)
         )
 
@@ -66,7 +66,7 @@ def get_package_metadata(
     """ """
 
     response = env.s3_client.head_object(
-        Bucket=env.args.get('bucket'),
+        Bucket=env.bucket,
         Key=versioning.make_s3_key(package_name, package_version)
     )
 

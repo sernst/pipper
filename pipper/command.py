@@ -5,6 +5,7 @@ from pipper import publisher
 from pipper import info
 from pipper import authorizer
 from pipper import downloader
+from pipper import repository
 from pipper.environment import Environment
 
 
@@ -14,7 +15,8 @@ ACTIONS = dict(
     install=installer.run,
     bundle=bundler.run,
     publish=publisher.run,
-    info=info.run
+    info=info.run,
+    repository=repository.run
 )
 
 

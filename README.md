@@ -1,6 +1,6 @@
-# WIP: Pipper
+# Pipper
 
-__This is a Work In Progress. Stay tuned if you're interested.__
+__Private Python package manager on an S3 bucket__
 
 An experimental Python package manager wrapped around pip for lightweight
 management of non-public packages with an AWS S3 static backend. Requires no
@@ -11,7 +11,7 @@ Management (IAM) users, roles and policies.
 
 ## Installing pipper
 
-The pipper package can be installed by pip:
+The pipper package can be installed using pip:
 
     $ pip install pipper
 
@@ -31,33 +31,74 @@ The available actions are:
  * [bundle](#bundle-action): bundle a package for publishing
  * [publish](#publish-action): release a new or updated package
  * [authorize](#authorize-action): create a pre-authorized url for download
+ * [repository](#repository-action): Modify pre-defined pipper repositories
 
     
 ## AWS Credentials
 
-Pipper uses AWS credentials for authentication. These credentials can be 
-specified in a number of ways. There are two command flags for specifying 
-credentials:
+Pipper uses AWS credentials for authentication. To maximize flexibility, the 
+AWS credentials can be specified in a myriad of ways. Pipper will try to
+identify credentials in the following order:
+
+__1. Pipper Configuration:__ Using pipper's _repository_ command action, you can store credentials and
+remote information in a pipper config file. If you do create a pipper
+repository configuration, which stores AWS credentials, you can reference
+that repository configuration by name to provide credentials to the 
+various commands with the `--repository` command flag:
+
+* `-r --repository <PIPPER_REPOSITORY_NAME>`
+
+For more information on how to specify repository configurations for use with
+this flag, see the [repository](#repository-action). This is the recommended
+way to specify credentials for persistent environments like your local computer.
+
+__2. AWS Profiles:__ Standard AWS profile-based credentials can be used as 
+well. Use the `--profile` flag to specify the name of the profile you wish
+to use:
 
 * `-p --profile <AWS_PROFILE_NAME>`
 
-    Use AWS credentials to authorize the package download. The
-    'default' profile will be used if this flag is not specified.
+__3. Explicit Credentials:__ You can specify the AWS credentials directly on
+the command line with the `--credentials` flag:
 
 * `-c --credentials <AWS_ACCESS_KEY_ID> <AWS_SECRET> <AWS_SESSION_TOKEN>`
 
-    Allows you to specify the AWS credentials directly instead of by
-    a named profile. Useful for situations where profiles are not
-    initialized or undesirable. If your credentials do not require a session
-    token, use a `*` character for the `<AWS_SESSION_TOKEN>` argument.
+This can be useful for situations where profiles are not initialized or 
+undesirable. If your credentials do not require a session token, which is
+usually the case, use a `*` character for the `<AWS_SESSION_TOKEN>` argument.
     
-If neither of these flags is specified, pipper will look for the credentials
-in pipper-specific environmental variables `PIPPER_AWS_ACCESS_KEY_ID`, 
-`PIPPER_AWS_SECRET_ACCESS_KEY`  and `PIPPER_AWS_SESSION_TOKEN`. If those 
-environmental variables do not exist, pipper will attempt to use the standard
-AWS environmental variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and 
-`AWS_SESSION_TOKEN`. If neither set of environmental variables exist, pipper
+__4. Pipper Environmental Variables:__ If none of the previous forms of 
+credentials are provided, pipper will try to use pipper-specific environmental 
+variables:
+
+`PIPPER_AWS_ACCESS_KEY_ID`
+     
+`PIPPER_AWS_SECRET_ACCESS_KEY`  
+
+`PIPPER_AWS_SESSION_TOKEN`
+
+__5. AWS Environmental Variables:__ If none of the previous forms of credentials
+are provided, pipper will attempt to use the standard AWS environmental 
+variables:
+
+`AWS_ACCESS_KEY_ID` 
+
+`AWS_SECRET_ACCESS_KEY`
+
+`AWS_SESSION_TOKEN`
+
+If neither set of environmental variables exist, pipper
 will fallback to using the _default_ profile credentials if they exist.
+
+__6. Default Pipper Repository Configuration:__ If none of the other 
+credentials are specified, pipper will try to use the default repository
+configuration if one exists.
+
+__7. System-level credentials:__ In the end, pipper will try to use the 
+default system-level credentials, which is useful in situations like EC2
+instances where the credentials are baked into the instance. However, on
+remote systems the lack of specified credentials will likely result in 
+authorization exceptions.
 
 
 ## Install Action
@@ -112,7 +153,7 @@ AWS credentials are unavailable.
 
     Name of the S3 bucket where the remote pipper files are stored.
 
-* `-d --directory`
+* `-d --directory <DIRECTORY_NAME>`
 
     The directory where the pipper bundle file for the package should be
     saved to when downloaded.
@@ -122,6 +163,73 @@ AWS credentials are unavailable.
     Allows you to download one or more packages from a pipper-formatted
     JSON file. Use this in place of specifying the packages directly
     in the command when convenient.
+
+* `-e --extract`
+
+    When specified, the downloaded pipper files will be immediately extracted
+    into their consituent wheel and metadata files. Useful if you want to 
+    install directly with pip using advanced options such as installing to
+    a specific directly.
+
+
+## Repository Action
+
+The repository action allows you to create and managed named repositories, 
+which can be used to simplify the management of credentials within the 
+command line. The repository command action has a number of sub-actions:
+
+
+### Repository: add
+
+    $ pipper repository add <REPOSITORY_NAME>
+
+Adds a new repository configuration with the specified name. Use the 
+`-p --profile` or `-c --credentials` flag to specify the AWS credentials to
+be used by this repository. The _add_ sub-action has other flags:
+
+* `-b --bucket <BUCKET_NAME>`
+
+    Name of the S3 bucket where the remote pipper files are stored for this
+    configuration. If the bucket is set in the repository configuration, it
+    will automatically be used by pipper.
+
+* `-d --default`
+
+    If this flag is set, this repository configuration will be the default one
+    used when no credentials or other information is specified.
+
+
+### Repository: modify
+
+    $ pipper repostory modify <EXISTING_REPOSITORY_NAME>
+
+Modifies an existing repository configuration with new values. This sub-action
+has the same flags as the _add_ sub-action. Any flags that you set will be
+used to replace existing values. Any omitted flags will retain their existing
+values.
+
+
+### Repository: remove
+
+    $ pipper repository remove <EXISTING_REPOSITORY_NAME>
+    
+Removes an existing repository configuration from the configuration storage.
+
+
+### Repository: list
+
+    $ pipper repository list
+
+Use this command to list the currently stored repository configurations. It
+also lets you know which of the configurations is set to the default value.
+
+
+### Repository: exists
+
+    $ pipper repository exists
+
+Displays information on whether or not a repository configuration currently 
+exists.
 
 
 ## Authorize Action
@@ -146,6 +254,17 @@ packages that can be used where credentials are not available.
 
     If specified, a pre-authorized pipper config file will be written that
     can be used later by download and installation commands.
+
+* `-e --expires <EXPIRES_IN>`
+
+    How long the authorized URL is valid before it expires. The format
+    should be `<NUMBER><UNIT>`, where the number is a positive integer and
+    the unit can be hours, minutes or seconds. Units can be abbreviated, e.g.:
+    
+    * _12mins_: 12 minutes
+    * _130m_: 130 minutes
+    * _18s_: 18 seconds
+    * _3hr_: 3 hours
 
 
 ## Info Action
