@@ -3,10 +3,14 @@ from pipper import installer
 from pipper import bundler
 from pipper import publisher
 from pipper import info
+from pipper import authorizer
+from pipper import downloader
 from pipper.environment import Environment
 
 
 ACTIONS = dict(
+    authorize=authorizer.run,
+    download=downloader.run,
     install=installer.run,
     bundle=bundler.run,
     publish=publisher.run,

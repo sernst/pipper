@@ -43,3 +43,16 @@ def make_s3_key(package_name: str, package_version: str) -> str:
     )
 
     return 'pipper/{}/{}.pipper'.format(package_name, safe_version)
+
+
+def parse_s3_key(key: str) -> dict:
+    """ """
+
+    parts = key.strip('/').split('/')
+    safe_version = parts[2].rsplit('.', 1)[0]
+
+    return dict(
+        name=parts[1],
+        safe_version=safe_version,
+        version=deserialize(safe_version)
+    )

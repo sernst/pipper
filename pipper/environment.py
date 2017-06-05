@@ -1,3 +1,6 @@
+import os
+import json
+
 from pipper import s3
 
 
@@ -14,3 +17,18 @@ class Environment:
     @property
     def action(self):
         return self.args.get('action')
+
+
+def load_configs(configs_path: str = None):
+    """ """
+
+    path = os.path.realpath(
+        configs_path or
+        os.path.join(os.curdir, 'pipper.json')
+    )
+
+    if not os.path.exists(path):
+        raise FileNotFoundError('Missing configuration file "{}"'.format(path))
+
+    with open(path, 'r') as f:
+        return json.load(f)

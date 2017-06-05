@@ -9,8 +9,8 @@ from distutils.core import run_setup
 
 from setuptools.dist import Distribution
 
-from pipper.environment import Environment
 from pipper import versioning
+from pipper.environment import Environment
 
 
 def zip_bundle(
@@ -145,20 +145,13 @@ def create_wheel(package_directory: str, bundle_directory: str) -> dict:
     )
 
 
-def run(env: Environment) -> str:
+def run(env: Environment):
     """ 
     Executes the bundling process on the specified package directory and saves
     the pipper bundle file in the specified output directory.
             
-    :param package_directory:
-        Directory where the package being bundled resides
-    :param output_directory:
-        Directory where the bundled file should be written. If this argument
-        is not specified, the bundled file will be written to the package
-        directory.
-    
-    :return
-        The absolute path to the location of the created bundle file.
+    :param env:
+        Environment configuration in which this command is being executed
     """
 
     package_directory = env.args.get('package_directory') or '.'

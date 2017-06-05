@@ -1,8 +1,6 @@
 import pip
-import semver
 import pkg_resources
-
-from pipper import downloader
+import semver
 
 from pipper import versioning
 
@@ -21,7 +19,7 @@ def update_required(package_name: str, install_version: str) -> bool:
         install_version
     )
 
-    result = semver.compare(version, existing.version)
+    result = semver.compare(existing.version, version)
     return result != 0
 
 

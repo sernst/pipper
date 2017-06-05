@@ -49,7 +49,15 @@ def populate_install(parser: ArgumentParser) -> ArgumentParser:
 
     parser.add_argument(
         '-i', '--input',
-        dest='package_path'
+        dest='configs_path'
+    )
+
+    parser.add_argument(
+        '-u', '--upgrade',
+        dest='upgrade',
+        action='store_true',
+        default=False,
+        help='Upgrade existing packages to latest version'
     )
 
     return populate_with_credentials(parser)
@@ -119,6 +127,58 @@ def populate_info(parser: ArgumentParser) -> ArgumentParser:
     return populate_with_credentials(parser)
 
 
+def populate_download(parser: ArgumentParser) -> ArgumentParser:
+    """ """
+
+    parser.description = read_file('resources', 'download_action.txt')
+
+    parser.add_argument(
+        'packages',
+        nargs='*'
+    )
+
+    parser.add_argument(
+        '-d', '--directory',
+        dest='save_directory'
+    )
+
+    parser.add_argument(
+        '-i', '--input',
+        dest='configs_path'
+    )
+
+    return populate_with_credentials(parser)
+
+
+def populate_authorize(parser: ArgumentParser) -> ArgumentParser:
+    """ """
+
+    parser.description = read_file('resources', 'authorize_action.txt')
+
+    parser.add_argument(
+        'packages',
+        nargs='*'
+    )
+
+    parser.add_argument(
+        '-o', '--output',
+        dest='save_path'
+    )
+
+    parser.add_argument(
+        '-i', '--input',
+        dest='configs_path'
+    )
+
+    parser.add_argument(
+        '-l', '--lifetime',
+        dest='minutes_to_live',
+        default=10
+    )
+
+    return populate_with_credentials(parser)
+
+
 def parse(cli_args: list = None) -> dict:
     """ """
 
@@ -133,6 +193,8 @@ def parse(cli_args: list = None) -> dict:
     populate_bundle(subparsers.add_parser('bundle'))
     populate_publish(subparsers.add_parser('publish'))
     populate_info(subparsers.add_parser('info'))
+    populate_download(subparsers.add_parser('download'))
+    populate_authorize(subparsers.add_parser('authorize'))
 
     out = vars(parser.parse_args(cli_args))
     out['parser'] = parser
