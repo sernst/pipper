@@ -55,7 +55,10 @@ def list_remote_version_info(env: Environment, package_name: str) -> list:
         for key in list_remote_package_keys(env, package_name)
     ]
 
-    return sorted(versions, key=functools.cmp_to_key(semver.compare))
+    def compare_versions(a: dict, b: dict) -> int:
+        return semver.compare(a['version'], b['version'])
+
+    return sorted(versions, key=functools.cmp_to_key(compare_versions))
 
 
 def get_package_metadata(
