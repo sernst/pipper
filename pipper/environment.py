@@ -17,7 +17,7 @@ REPOSITORY_CONFIGS_PATH = os.path.join(
 class Environment:
 
     def __init__(self, args: dict = None):
-        self.args = args or {}
+        self.args = clean_args(args or {})
 
         repository = load_repository(self.args.get('repository_name'))
         default_repository = load_repository(None, True)
@@ -32,6 +32,10 @@ class Environment:
         self.s3_client = self.aws_session.client('s3')  # type: BaseClient
 
     @property
+    def quiet(self) -> bool:
+        return self.args.get('quiet') or False
+
+    @property
     def bucket(self) -> str:
         return (
             self.args.get('bucket') or
@@ -41,6 +45,17 @@ class Environment:
     @property
     def action(self) -> str:
         return self.args.get('action')
+
+
+def clean_args(args: dict) -> dict:
+    """Cleans the arguments by stripping them of whitespace and quotations"""
+
+    def clean(arg):
+        if isinstance(arg, str):
+            return arg.strip(' "')
+        return arg
+
+    return {key: clean(value) for key, value in args.items()}
 
 
 def load_repositories() -> dict:

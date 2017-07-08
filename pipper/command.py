@@ -24,26 +24,30 @@ ACTIONS = dict(
 )
 
 
-def show_version():
+def show_version(env: Environment):
     """Shows the pipper version information and then exits"""
 
     settings_path = os.path.join(os.path.dirname(__file__), 'settings.json')
     with open(settings_path) as f:
         settings = json.load(f)
 
-    print('Version: {}'.format(settings.get('version') or 'Unknown'))
+    version = settings.get('version') or '0.0.0'
+
+    if env.quiet:
+        print(version)
+    else:
+        print('Version: {}'.format(version))
 
 
 def run(cli_args: list = None):
     """ """
 
     args = parser.parse(cli_args)
+    env = Environment(args)
 
     if args.get('version'):
-        show_version()
+        show_version(env)
         sys.exit(0)
-
-    env = Environment(args)
 
     action = ACTIONS.get(env.action)
     if action is None:
@@ -52,7 +56,8 @@ def run(cli_args: list = None):
         args['parser'].print_help()
         raise ValueError(message)
 
-    print('\n\n=== {} ===\n'.format(env.action.upper()))
+    if not env.quiet:
+        print('\n\n=== {} ===\n'.format(env.action.upper()))
 
     try:
         action(env)
@@ -60,4 +65,5 @@ def run(cli_args: list = None):
         print('[ERROR]: Unable to complete action. {}\n'.format(err))
         raise
 
-    print('\n')
+    if not env.quiet:
+        print('\n')

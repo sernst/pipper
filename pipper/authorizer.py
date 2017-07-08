@@ -70,7 +70,8 @@ def create_url(env: Environment, package_id: str) -> str:
         Params={'Bucket': env.bucket, 'Key': data['key']}
     )
 
-    print('[AUTHORIZED]: {} -> {}'.format(data['name'], url))
+    if not env.quiet:
+        print('[AUTHORIZED]: {} -> {}'.format(data['name'], url))
     return url
 
 
@@ -91,7 +92,8 @@ def create_many_urls(env: Environment, package_ids: list) -> dict:
     with open(path, 'w') as f:
         json.dump(configs, f)
 
-    print('[SAVED]: {}'.format(path))
+    if not env.quiet:
+        print('[SAVED]: {}'.format(path))
 
     return urls
 
@@ -102,7 +104,11 @@ def run(env: Environment):
 
     package_ids = env.args.get('packages')
     if package_ids:
-        return create_many_urls(env, package_ids)
+        urls = create_many_urls(env, package_ids)
+    else:
+        configs = environment.load_configs(env.args.get('configs_path'))
+        urls = create_many_urls(env, configs.get('dependencies') or [])
 
-    configs = environment.load_configs(env.args.get('configs_path'))
-    return create_many_urls(env, configs.get('dependencies') or [])
+    if env.quiet:
+        print(' '.join(urls.values()))
+    return urls

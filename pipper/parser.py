@@ -12,7 +12,22 @@ def read_file(*args) -> str:
         return f.read()
 
 
+def populate_with_common(parser: ArgumentParser) -> ArgumentParser:
+    """ """
+
+    parser.add_argument(
+        '-q', '--quiet',
+        dest='quiet',
+        action='store_true',
+        default=False,
+        help='Quiet output only returns necessary information for commands'
+    )
+
+    return parser
+
+
 def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
+    """ """
 
     parser.add_argument(
         '-r', '--repository',
@@ -219,6 +234,14 @@ def populate_authorize(parser: ArgumentParser) -> ArgumentParser:
         default=10
     )
 
+    parser.add_argument(
+        '-l', '--list',
+        dest='list',
+        action='store_true',
+        default=False,
+        help='Compact output as a single-line, space-separated list'
+    )
+
     return populate_with_credentials(parser)
 
 
@@ -240,13 +263,18 @@ def parse(cli_args: list = None) -> dict:
 
     subparsers = parser.add_subparsers(help='Command actions', dest='action')
 
-    populate_install(subparsers.add_parser('install'))
-    populate_bundle(subparsers.add_parser('bundle'))
-    populate_publish(subparsers.add_parser('publish'))
-    populate_info(subparsers.add_parser('info'))
-    populate_download(subparsers.add_parser('download'))
-    populate_authorize(subparsers.add_parser('authorize'))
-    populate_repository(subparsers.add_parser('repository'))
+    parsers = [
+        populate_install(subparsers.add_parser('install')),
+        populate_bundle(subparsers.add_parser('bundle')),
+        populate_publish(subparsers.add_parser('publish')),
+        populate_info(subparsers.add_parser('info')),
+        populate_download(subparsers.add_parser('download')),
+        populate_authorize(subparsers.add_parser('authorize')),
+        populate_repository(subparsers.add_parser('repository'))
+    ]
+
+    for p in parsers:
+        populate_with_common(p)
 
     out = vars(parser.parse_args(cli_args))
     out['parser'] = parser
