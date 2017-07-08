@@ -144,6 +144,9 @@ def download_package(env: Environment, package_id: str) -> str:
         data['version']
     ))
 
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     if 'url' in data:
         save(package_id, path)
     else:

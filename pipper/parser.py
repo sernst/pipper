@@ -230,6 +230,14 @@ def parse(cli_args: list = None) -> dict:
         add_help=True
     )
 
+    parser.add_argument(
+        '-v', '--version',
+        dest='version',
+        action='store_true',
+        default=False,
+        help='Show the pipper version information and then exit'
+    )
+
     subparsers = parser.add_subparsers(help='Command actions', dest='action')
 
     populate_install(subparsers.add_parser('install'))
