@@ -61,7 +61,11 @@ def parse_url(pipper_url: str) -> dict:
 def create_url(env: Environment, package_id: str) -> str:
     """ """
 
-    data = downloader.parse_package_id(env, package_id)
+    data = downloader.parse_package_id(
+        env=env,
+        package_id=package_id,
+        use_latest_version=True
+    )
     delta = to_time_delta(env.args.get('expires_in'))
 
     url = env.s3_client.generate_presigned_url(
@@ -99,8 +103,7 @@ def create_many_urls(env: Environment, package_ids: list) -> dict:
 
 
 def run(env: Environment):
-    """ 
-    """
+    """Execute the authorize command"""
 
     package_ids = env.args.get('packages')
     if package_ids:

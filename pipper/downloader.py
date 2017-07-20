@@ -31,7 +31,11 @@ def parse_package_url(package_url: str) -> dict:
     )
 
 
-def parse_package_id(env: Environment, package_id: str) -> dict:
+def parse_package_id(
+        env: Environment,
+        package_id: str,
+        use_latest_version: bool = False
+) -> dict:
     """ 
     Parses a package id into its constituent name and version information. If
     the version is not specified as part of the identifier, a version will
@@ -45,7 +49,8 @@ def parse_package_id(env: Environment, package_id: str) -> dict:
     :param package_id:
         Identifier for the package to be loaded. This can be either a package
         name, or a package name and version (NAME:VERSION) combination.
-
+    :param use_latest_version:
+        Whether or not to use the latest version.
     :return:
         A dictionary containing installation information for the specified
         package. The dictionary has the following fields:
@@ -61,7 +66,7 @@ def parse_package_id(env: Environment, package_id: str) -> dict:
 
     package_parts = package_id.split(':')
     name = package_parts[0]
-    upgrade = env.args.get('upgrade')
+    upgrade = use_latest_version or env.args.get('upgrade')
 
     def possible_versions():
         yield package_parts[1] if len(package_parts) > 1 else None
