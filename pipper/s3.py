@@ -21,7 +21,7 @@ def session_from_credentials_list(
 
     token = (
         credentials[2]
-        if len(credentials) > 2 and len(credentials[2]) > 1 else
+        if len(credentials) > 2 and credentials[2] is not None and len(credentials[2]) > 1 else
         None
     )
 
