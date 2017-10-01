@@ -29,7 +29,8 @@ def list_remote_package_keys(
 
         response = env.s3_client.list_objects_v2(**list_kwargs)
 
-        remote_keys += [item['Key'] for item in response['Contents']]
+        matches = response.get('Contents') or []
+        remote_keys += [item['Key'] for item in matches]
         if not response['IsTruncated']:
             break
 
@@ -96,11 +97,18 @@ def print_with_remote(env: Environment, package_name: str):
     """ """
 
     remote_versions = list_remote_version_info(env, package_name)
-    latest = get_package_metadata(
-        env,
-        package_name,
-        remote_versions[-1]['version']
-    )
+
+    try:
+        latest = get_package_metadata(
+            env,
+            package_name,
+            remote_versions[-1]['version']
+        )
+    except IndexError:
+        latest = dict(
+            version='None',
+            timestamp='Never'
+        )
 
     local_data = wrapper.status(package_name)
     comparison = (
