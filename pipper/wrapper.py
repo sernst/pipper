@@ -34,7 +34,10 @@ def status(package_name: str):
         raise
 
 
-def install_wheel(wheel_path: str):
+def install_wheel(wheel_path: str, to_user: bool = False):
     """ """
 
-    pip.main(['install', wheel_path])
+    cmd = ['install', wheel_path]
+    cmd += ['--user'] if to_user else []
+    print('COMMAND:', ' '.join(cmd))
+    pip.main(cmd)

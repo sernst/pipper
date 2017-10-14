@@ -10,13 +10,15 @@ from pipper import wrapper
 from pipper.environment import Environment
 
 
-def install_pipper_file(local_source_path: str) -> dict:
+def install_pipper_file(local_source_path: str, to_user: bool = False) -> dict:
     """ 
     Installs the specified local pipper bundle file.
     
     :param local_source_path:
         An absolute path to the pipper bundle file to install
-        
+    :param to_user:
+        Whether or not to install the package for the user or not. If not a
+        user package, the package will be installed globally.
     :return
         The package metadata from the pipper bundle
     """
@@ -28,7 +30,7 @@ def install_pipper_file(local_source_path: str) -> dict:
         directory
     )
 
-    wrapper.install_wheel(extracted['wheel_path'])
+    wrapper.install_wheel(extracted['wheel_path'], to_user)
     shutil.rmtree(directory)
 
     return extracted['metadata']
@@ -111,9 +113,8 @@ def install(env: Environment, package_id: str):
 
     print('DOWNLOAD PATH:', os.path.exists(path), path)
 
-
     try:
-        metadata = install_pipper_file(path)
+        metadata = install_pipper_file(path, to_user=env.args.get('pip_user'))
     except Exception:
         raise
     finally:

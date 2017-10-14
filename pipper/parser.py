@@ -73,6 +73,13 @@ def populate_install(parser: ArgumentParser) -> ArgumentParser:
     )
 
     parser.add_argument(
+        '--user',
+        default=False,
+        action='store_true',
+        dest='pip_user'
+    )
+
+    parser.add_argument(
         '-u', '--upgrade',
         dest='upgrade',
         action='store_true',
