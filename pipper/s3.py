@@ -19,16 +19,13 @@ def session_from_credentials_list(
     if not is_valid:
         return None
 
-    token = (
-        credentials[2]
-        if len(credentials) > 2 and credentials[2] is not None and len(credentials[2]) > 1 else
-        None
-    )
+    token = (credentials[2] if len(credentials) > 2 else None)
+    token = (token or '*').strip().strip('"\'')
 
     return Session(
         aws_access_key_id=credentials[0],
         aws_secret_access_key=credentials[1],
-        aws_session_token=token
+        aws_session_token=token if len(token) > 1 else None
     )
 
 
