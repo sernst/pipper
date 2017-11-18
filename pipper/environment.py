@@ -4,6 +4,7 @@ import typing
 
 from boto3.session import Session
 from botocore.client import BaseClient
+from botocore.credentials import Credentials
 
 from pipper import s3
 
@@ -158,14 +159,29 @@ def get_session(
     ]
 
     def generate_session():
+        yield s3.session_from_credentials_list(command_credentials)
         yield s3.session_from_profile_name(repo_aws_profile)
         yield s3.session_from_credentials_list(repository_credentials)
         yield s3.session_from_profile_name(aws_profile)
-        yield s3.session_from_credentials_list(command_credentials)
         yield s3.session_from_credentials_list(specific_credentials)
         yield s3.session_from_credentials_list(env_credentials)
         yield s3.session_from_profile_name(default_repo_aws_profile)
         yield s3.session_from_credentials_list(default_repository_credentials)
         yield Session()
 
-    return next(s for s in generate_session() if s is not None)
+    session = next(s for s in generate_session() if s is not None)
+    credentials: Credentials = session.get_credentials()
+
+    token = credentials.token
+
+    print('\n[LOADED]: AWS Credentials')
+    print('    PROFILE: {}'.format(session.profile_name))
+    print('    ACCESS: {}'.format(credentials.access_key))
+    print('    SECRET: {}...'.format(credentials.secret_key[:8]))
+    print('     TOKEN: {}{}'.format(
+        token[:12] if token else 'NONE',
+        '...' if token else ''
+    ))
+    print('    METHOD: {}'.format(credentials.method))
+
+    return session

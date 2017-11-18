@@ -40,7 +40,20 @@ Pipper uses AWS credentials for authentication. To maximize flexibility, the
 AWS credentials can be specified in a myriad of ways. Pipper will try to
 identify credentials in the following order:
 
-__1. Pipper Configuration:__ Using pipper's _repository_ command action, you can store credentials and
+__1. Explicit Credentials:__ You can specify the AWS credentials directly on
+the command line with the `--credentials` flag:
+
+* `-c --credentials <AWS_ACCESS_KEY_ID> <AWS_SECRET> <AWS_SESSION_TOKEN>`
+
+This can be useful for situations where profiles are not initialized or 
+undesirable. If your credentials do not require a session token, which is
+usually the case, that argument can be omitted. It's also possible to specify
+a missing token using a `0` value for the `<AWS_SESSION_TOKEN>` argument for
+simplicity in cases where omitting the value is more difficult than including
+it with an explicit ignore value.
+
+
+__2. Pipper Configuration:__ Using pipper's _repository_ command action, you can store credentials and
 remote information in a pipper config file. If you do create a pipper
 repository configuration, which stores AWS credentials, you can reference
 that repository configuration by name to provide credentials to the 
@@ -52,21 +65,12 @@ For more information on how to specify repository configurations for use with
 this flag, see the [repository](#repository-action). This is the recommended
 way to specify credentials for persistent environments like your local computer.
 
-__2. AWS Profiles:__ Standard AWS profile-based credentials can be used as 
+__3. AWS Profiles:__ Standard AWS profile-based credentials can be used as 
 well. Use the `--profile` flag to specify the name of the profile you wish
 to use:
 
 * `-p --profile <AWS_PROFILE_NAME>`
-
-__3. Explicit Credentials:__ You can specify the AWS credentials directly on
-the command line with the `--credentials` flag:
-
-* `-c --credentials <AWS_ACCESS_KEY_ID> <AWS_SECRET> <AWS_SESSION_TOKEN>`
-
-This can be useful for situations where profiles are not initialized or 
-undesirable. If your credentials do not require a session token, which is
-usually the case, use a `*` character for the `<AWS_SESSION_TOKEN>` argument.
-    
+ 
 __4. Pipper Environmental Variables:__ If none of the previous forms of 
 credentials are provided, pipper will try to use pipper-specific environmental 
 variables:

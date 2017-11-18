@@ -1,7 +1,33 @@
 import os
+import argparse
 from argparse import ArgumentParser
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
+
+
+def required_length(minimum: int, maximum: int, optional: bool = False):
+    """Returns a custom required length class"""
+
+    class RequiredLength(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            is_allowed = (
+                (minimum <= len(values) <= maximum) or
+                (optional and not len(values))
+            )
+
+            if  is_allowed:
+                setattr(args, self.dest, values)
+                return
+
+            raise argparse.ArgumentTypeError(
+                'Argument "{}" must have {}-{} arguments'.format(
+                    self.dest,
+                    minimum,
+                    maximum
+                )
+            )
+
+    return RequiredLength
 
 
 def read_file(*args) -> str:
@@ -43,9 +69,10 @@ def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
     parser.add_argument(
         '-c', '--credentials',
         dest='aws_credentials',
-        nargs=3,
+        nargs='+',
         default=[],
-        help=''
+        help='',
+        action=required_length(2, 3, True)
     )
 
     parser.add_argument(

@@ -20,7 +20,7 @@ def session_from_credentials_list(
         return None
 
     token = (credentials[2] if len(credentials) > 2 else None)
-    token = (token or '*').strip().strip('"\'')
+    token = (token or '0').strip().strip('"\'')
 
     return Session(
         aws_access_key_id=credentials[0],
