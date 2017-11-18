@@ -43,7 +43,7 @@ def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
     parser.add_argument(
         '-c', '--credentials',
         dest='aws_credentials',
-        nargs=2,
+        nargs=3,
         default=[],
         help=''
     )
