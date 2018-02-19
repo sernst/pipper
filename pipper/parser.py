@@ -149,6 +149,17 @@ def populate_publish(parser: ArgumentParser) -> ArgumentParser:
         help='Force publishing even if the version has already been published'
     )
 
+    parser.add_argument(
+        '--skip-fails',
+        dest='skip_fails',
+        action='store_true',
+        default=False,
+        help=' '.join([
+            'Raise an exception if publish is skipped because version is',
+            'already published.'
+        ])
+    )
+
     return populate_with_credentials(parser)
 
 

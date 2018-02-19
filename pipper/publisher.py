@@ -58,6 +58,12 @@ def from_pipper_file(env: Environment, bundle_path: str):
             metadata['name'],
             metadata['version']
         ))
+
+        if env.args.get('skip_fails'):
+            raise ValueError(
+                'Failed because this version and published version match.'
+            )
+
         return
 
     print('[PUBLISHING]: "{}" version {}'.format(
