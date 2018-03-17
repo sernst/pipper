@@ -1,3 +1,4 @@
+import sys
 import pip
 import pkg_resources
 import semver

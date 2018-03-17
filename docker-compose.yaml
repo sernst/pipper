@@ -1,0 +1,8 @@
+version: "3"
+services:
+  dev:
+    build: .
+    entrypoint: /bin/bash
+    volumes:
+      - ~/.aws:/root/.aws
+      - ./:/root/libraries
