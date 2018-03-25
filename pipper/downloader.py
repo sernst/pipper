@@ -75,7 +75,11 @@ def parse_package_id(
             yield existing.version if existing else None
         yield info.list_remote_version_info(env, package_id)[-1]['version']
 
-    version = next(v for v in possible_versions() if v is not None)
+    try:
+        version = next(v for v in possible_versions() if v is not None)
+    except IndexError:
+        print('[ERROR]: Unable to acquire version of "{}"'.format(package_id))
+        raise
 
     return dict(
         name=name,
