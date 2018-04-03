@@ -14,29 +14,7 @@ def list_remote_package_keys(
         package_name: str
 ) -> typing.List[str]:
     """ """
-
-    remote_keys = []
-    continuation_token = None
-
-    for i in range(1000):
-        list_kwargs = dict(
-            Bucket=env.bucket,
-            Prefix='pipper/{}'.format(package_name)
-        )
-
-        if continuation_token:
-            list_kwargs['ContinuationToken'] = continuation_token
-
-        response = env.s3_client.list_objects_v2(**list_kwargs)
-
-        matches = response.get('Contents') or []
-        remote_keys += [item['Key'] for item in matches]
-        if not response['IsTruncated']:
-            break
-
-        continuation_token = response['NextContinuationToken']
-
-    return [key for key in remote_keys if key.endswith('.pipper')]
+    return [v.key for v in versioning.list_versions(env, package_name)]
 
 
 def list_remote_version_info(env: Environment, package_name: str) -> list:

@@ -1,13 +1,12 @@
-import os
 import json
+import os
 import re
-from urllib.parse import urlparse
 from datetime import timedelta
+from urllib.parse import urlparse
 
 from pipper import downloader
 from pipper import environment
 from pipper.environment import Environment
-
 
 DELTA_REGEX = re.compile('(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]+)')
 

@@ -69,14 +69,18 @@ def parse_package_id(
     upgrade = use_latest_version or env.args.get('upgrade')
 
     def possible_versions():
-        yield package_parts[1] if len(package_parts) > 1 else None
+        yield (
+            versioning.find_latest_match(env, *package_parts).version
+            if len(package_parts) > 1 else
+            None
+        )
         if not upgrade:
             existing = wrapper.status(name)
             yield existing.version if existing else None
-        yield info.list_remote_version_info(env, package_id)[-1]['version']
+        yield versioning.find_latest_match(env, name).version
 
     try:
-        version = next(v for v in possible_versions() if v is not None)
+        version = next((v for v in possible_versions() if v is not None))
     except IndexError:
         print('[ERROR]: Unable to acquire version of "{}"'.format(package_id))
         raise

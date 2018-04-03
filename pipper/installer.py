@@ -72,7 +72,7 @@ def install(env: Environment, package_id: str):
     data = downloader.parse_package_id(env, package_id)
     is_url = 'url' in data
 
-    if not upgrade and wrapper.status(data['name']):
+    if not upgrade and not data['version'] and wrapper.status(data['name']):
         print((
             '[SKIPPED]: "{}" already installed. '
             'Use the upgrade flag or specify a version if you want to '

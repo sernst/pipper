@@ -1,6 +1,5 @@
 import pip
 import pkg_resources
-import semver
 
 try:
     # Starting with pip10 the `main` function has moved
@@ -26,8 +25,9 @@ def update_required(package_name: str, install_version: str) -> bool:
         install_version
     )
 
-    result = semver.compare(existing.version, version)
-    return result != 0
+    current = pkg_resources.parse_version(existing.version)
+    target = pkg_resources.parse_version(version)
+    return current != target
 
 
 def status(package_name: str):
