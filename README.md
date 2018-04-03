@@ -325,3 +325,22 @@ found, the most recently created one will be uploaded.
     
     Unless this flag is specified, publishing a package will be skipped if an
     identical version of the package has already been published.
+
+
+## Version Locking
+
+Pipper supports version matching/locking in a similar fashion to pip. However,
+the syntax is a little bit stricter. Values must conform to semantic
+versions. Consider a library `foo`. A specific version can be installed using
+any of the following statements:
+
+- `foo` no version will install latest
+- `foo:1.2.3` that specific version
+- `foo:=1.2.3` that specific version
+- `foo:==1.2.3` that specific version
+- `foo:1.2.*` the latest revision of `1.2.x`
+- `foo:1.*.*` the latest minor version and revision of `1.x.x`
+- `foo:<1.2.3` any version below the specified one
+- `foo:<=1.2.3` any version equal to or below the specified one
+- `foo:>1.2.3` any version above the specified one
+- `foo:>=1.2.3` any version equal to or above the specified one

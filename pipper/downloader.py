@@ -85,6 +85,8 @@ def parse_package_id(
         print('[ERROR]: Unable to acquire version of "{}"'.format(package_id))
         raise
 
+    print('[PACKAGE]:', package_id, version)
+
     return dict(
         name=name,
         version=version,

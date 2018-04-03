@@ -6,3 +6,4 @@ services:
     volumes:
       - ~/.aws:/root/.aws
       - ./:/root/libraries
+      - ~/.pipper:/root/.pipper
