@@ -49,7 +49,11 @@ def install_dependencies(env: Environment, dependencies: typing.List[str]):
     """
 
     def do_install(package_name: str):
-        existing = wrapper.status(package_name)
+        try:
+            data = downloader.parse_package_id(env, package_name)
+            existing = wrapper.status(data['name'])
+        except Exception:
+            existing = wrapper.status(package_name)
         return install(env, package_name) if not existing else None
 
     for name in dependencies:
