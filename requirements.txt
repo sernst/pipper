@@ -1,5 +1,8 @@
+pip
 requests
 wheel
 setuptools
 semver
 boto3
+pytest
+pytest-runner
