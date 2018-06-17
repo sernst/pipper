@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 class BotoMocks(typing.NamedTuple):
     """Data structure for boto3 mocked objects"""
+
     session: MagicMock
     s3_client: MagicMock
 
@@ -24,22 +25,21 @@ class PatchSession:
         """
         @patch('pipper.environment.get_session')
         def patch_session(get_session: MagicMock, *args, **kwargs):
-            boto_mocks = create_boto_mocks()
+            boto_mocks = _create_boto_mocks()
             get_session.return_value = boto_mocks.session
             test_function(boto_mocks, *args, **kwargs)
 
         return patch_session
 
 
-def make_identifier_effect(**identifiers):
+def affect_by_identifier(**identifiers):
     """..."""
     def side_effect(execution_identifier: str, *args, **kwargs):
         return identifiers.get(execution_identifier)
-
     return side_effect
 
 
-def make_list_objects_v2_response(
+def make_list_objects_response(
         contents: list = None,
         next_continuation_token: str = None
 ) -> dict:
@@ -50,7 +50,7 @@ def make_list_objects_v2_response(
     )
 
 
-def create_client(
+def _get_client(
         mocked_clients: typing.Dict[str, MagicMock],
         identifier: str,
         **kwargs
@@ -59,14 +59,12 @@ def create_client(
     return mocked_clients.get(identifier) or MagicMock()
 
 
-def create_boto_mocks(
-
-) -> BotoMocks:
+def _create_boto_mocks() -> BotoMocks:
     """..."""
     s3_client = MagicMock()
     session = MagicMock()
     session.client.side_effect = functools.partial(
-        create_client,
+        _get_client,
         {'s3': s3_client}
     )
     return BotoMocks(session=session, s3_client=s3_client)
