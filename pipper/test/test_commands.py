@@ -9,7 +9,7 @@ from pipper.test import utils
 @utils.PatchSession()
 def test_info(boto_mocks: utils.BotoMocks, list_objects: MagicMock):
     """..."""
-    list_objects.side_effect = utils.make_identifier_effect(
-        list_versions=utils.make_list_objects_v2_response(contents=[])
+    list_objects.side_effect = utils.affect_by_identifier(
+        list_versions=utils.make_list_objects_response(contents=[])
     )
     command.run(['info', 'fake-package'])
