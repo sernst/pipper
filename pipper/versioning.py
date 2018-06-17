@@ -2,6 +2,7 @@ import typing
 
 import semver
 
+from pipper import s3
 from pipper.environment import Environment
 
 
@@ -208,9 +209,10 @@ def list_versions(
             if responses else
             {}
         )
-        responses.append(client.list_objects_v2(
-            Bucket=environment.bucket,
-            Prefix=key_prefix,
+        responses.append(s3.list_objects(
+            execution_identifier='list_versions',
+            bucket=environment.bucket,
+            prefix=key_prefix,
             **continuation_kwargs
         ))
 
