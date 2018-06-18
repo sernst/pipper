@@ -28,7 +28,6 @@ def install_pipper_file(
     :return
         The package metadata from the pipper bundle
     """
-
     directory = tempfile.mkdtemp(prefix='pipper-install-')
 
     extracted = downloader.extract_pipper_file(
@@ -43,7 +42,7 @@ def install_pipper_file(
 
 
 def install_dependencies(env: Environment, dependencies: typing.List[str]):
-    """ 
+    """
     
     :param env:
         Command environment in which this function is being executed
@@ -53,7 +52,6 @@ def install_dependencies(env: Environment, dependencies: typing.List[str]):
         (NAME:VERSION) combination, but this version information is ignored for
         dependencies.
     """
-
     def do_install(package_name: str):
         try:
             data = downloader.parse_package_id(env, package_name)
@@ -77,7 +75,6 @@ def install(env: Environment, package_id: str):
         Identifier for the package to be loaded. This can be either a package
         name, or a package name and version (NAME:VERSION) combination.
     """
-
     upgrade = env.args.get('upgrade')
     data = downloader.parse_package_id(env, package_id)
     is_url = 'url' in data
@@ -139,7 +136,7 @@ def install(env: Environment, package_id: str):
 
 
 def install_many(env: Environment, package_ids: typing.List[str]):
-    """ 
+    """
     Installs a list of package identifiers, which can be either package names
     or package name and version combinations.
     
@@ -149,13 +146,12 @@ def install_many(env: Environment, package_ids: typing.List[str]):
         A list of package names or package name and version combinations to
         install
     """
-
     for package_id in package_ids:
         install(env, package_id)
 
 
 def install_from_configs(env: Environment, configs_path: str = None):
-    """ 
+    """
     Installs pipper dependencies specified in a pipper configs file. If the
     path to the configs file is not specified, the default path will be used
     instead. The default location is a pipper.json file in the current
@@ -183,7 +179,7 @@ def install_from_configs(env: Environment, configs_path: str = None):
 
 
 def run(env: Environment):
-    """ 
+    """
     Executes an installation command action under the given environmental
     conditions. If a packages argument is specified and contains one or more
     package IDs, they will be installed. If a path to a JSON pipper configs 
@@ -194,7 +190,6 @@ def run(env: Environment):
     :param env:
         Command environment in which this function is being executed
     """
-
     packages = env.args.get('packages')
     if packages:
         return install_many(env, packages)

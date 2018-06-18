@@ -118,7 +118,7 @@ def get_session(
         repository: dict,
         default_repository: dict
 ) -> Session:
-    """ 
+    """
     Creates an S3 session using AWS credentials, which can be specified in a 
     myriad of potential ways.
     """

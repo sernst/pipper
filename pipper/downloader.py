@@ -36,7 +36,7 @@ def parse_package_id(
         package_id: str,
         use_latest_version: bool = False
 ) -> dict:
-    """ 
+    """
     Parses a package id into its constituent name and version information. If
     the version is not specified as part of the identifier, a version will
     be determined. If the package is already installed and the upgrade flag is
@@ -96,9 +96,7 @@ def parse_package_id(
 
 
 def save(url: str, local_path: str) -> str:
-    """ 
-    """
-
+    """..."""
     with closing(requests.get(url, stream=True)) as response:
         if response.status_code != 200:
             print((
@@ -185,24 +183,18 @@ def download_package(env: Environment, package_id: str) -> str:
 
 
 def download_many(env: Environment, package_ids: list) -> dict:
-    """ 
-    """
-
+    """..."""
     return {pid: download_package(env, pid) for pid in package_ids}
 
 
 def download_from_configs(env: Environment, configs_path: str = None) -> dict:
-    """ 
-    """
-
+    """..."""
     configs = environment.load_configs(configs_path)
     return download_many(env, configs.get('dependencies') or [])
 
 
 def run(env: Environment):
-    """ 
-    """
-
+    """..."""
     package_ids = env.args.get('packages')
     if not package_ids:
         return download_from_configs(env, env.args.get('configs_path'))

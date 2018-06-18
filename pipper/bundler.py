@@ -18,7 +18,7 @@ def zip_bundle(
         output_directory: str,
         distribution_data: dict
 ) -> str:
-    """ 
+    """
     Creates a pipper zip file from the temporarily stored meta data and wheel
     files and saves that zip file to the output directory location with the
     pipper extension.
@@ -56,7 +56,7 @@ def create_meta(
         bundle_directory: str,
         distribution_data: dict
 ) -> str:
-    """ 
+    """
     Creates a JSON-formatted metadata file with information about the package 
     being bundled that is saved into the specified output directory.
     
@@ -100,7 +100,7 @@ def create_meta(
 
 
 def create_wheel(package_directory: str, bundle_directory: str) -> dict:
-    """ 
+    """
     Creates a universally wheel distribution of the specified package and
     saves that to the bundle directory.
     
@@ -146,7 +146,7 @@ def create_wheel(package_directory: str, bundle_directory: str) -> dict:
 
 
 def run(env: Environment):
-    """ 
+    """
     Executes the bundling process on the specified package directory and saves
     the pipper bundle file in the specified output directory.
             

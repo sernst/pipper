@@ -12,7 +12,7 @@ DELTA_REGEX = re.compile('(?P<number>[0-9]+)\s*(?P<unit>[a-zA-Z]+)')
 
 
 def to_time_delta(age: str) -> timedelta:
-    """ 
+    """
     Converts an age string into a timedelta object, parsing the number and 
     units of the age. Valid units are:
         * hour, hrs, hr, h
@@ -41,7 +41,7 @@ def to_time_delta(age: str) -> timedelta:
 
 
 def parse_url(pipper_url: str) -> dict:
-    """ 
+    """
     Parses a wheel url into a dictionary containing information about the wheel 
     file
     """
