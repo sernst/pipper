@@ -9,7 +9,6 @@ def session_from_credentials_list(
         credentials: list
 ) -> typing.Union[Session, None]:
     """ """
-
     is_valid = (
         credentials and
         len(credentials) > 1 and
@@ -43,7 +42,6 @@ def session_from_profile_name(
 
 def key_exists(s3_client, bucket: str, key: str) -> bool:
     """ """
-
     try:
         response = s3_client.list_objects(
             Bucket=bucket,

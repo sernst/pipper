@@ -168,23 +168,23 @@ def deserialize(safe_version: str) -> str:
 
 
 def make_s3_key(package_name: str, package_version: str) -> str:
-    """ """
-
+    """
+    Converts a package name and version into a fully-qualified S3 key to the
+    location where the file resides in the hosting S3 bucket. The package
+    version must be a complete semantic version but can be serialized or not.
+    """
     safe_version = (
         serialize(package_version)
         if not package_version.startswith('v') else
         package_version
     )
-
     return 'pipper/{}/{}.pipper'.format(package_name, safe_version)
 
 
 def parse_s3_key(key: str) -> dict:
     """ """
-
     parts = key.strip('/').split('/')
     safe_version = parts[2].rsplit('.', 1)[0]
-
     return dict(
         name=parts[1],
         safe_version=safe_version,
@@ -198,7 +198,6 @@ def list_versions(
         version_prefix: str = None
 ) -> typing.List[RemoteVersion]:
     """..."""
-    client = environment.aws_session.client('s3')
     prefix = serialize_prefix(version_prefix or '').split('*')[0]
     key_prefix = 'pipper/{}/v{}'.format(package_name, prefix)
 
@@ -211,6 +210,7 @@ def list_versions(
         )
         responses.append(s3.list_objects(
             execution_identifier='list_versions',
+            s3_client=environment.s3_client,
             bucket=environment.bucket,
             prefix=key_prefix,
             **continuation_kwargs
@@ -253,7 +253,6 @@ def find_latest_match(
         version_constraint: str = None
 ) -> typing.Union[RemoteVersion, None]:
     """..."""
-
     available = list_versions(environment, package_name)
     available.reverse()
 

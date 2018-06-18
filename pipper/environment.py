@@ -70,7 +70,6 @@ def load_repositories() -> dict:
 
 def save_repositories(config_data: dict) -> dict:
     """ """
-
     directory = os.path.dirname(REPOSITORY_CONFIGS_PATH)
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -86,7 +85,6 @@ def load_repository(
         allow_default: bool = False
 ) -> dict:
     """ """
-
     results = load_repositories()
 
     try:
@@ -103,7 +101,6 @@ def load_repository(
 
 def load_configs(configs_path: str = None):
     """ """
-
     path = os.path.realpath(
         configs_path or
         os.path.join(os.curdir, 'pipper.json')
@@ -125,7 +122,6 @@ def get_session(
     Creates an S3 session using AWS credentials, which can be specified in a 
     myriad of potential ways.
     """
-
     aws_profile = args.get('aws_profile')
     command_credentials = args.get('aws_credentials') or []
 
