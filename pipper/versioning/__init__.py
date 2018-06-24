@@ -82,9 +82,16 @@ def compare_constraint(version: str, constraint: str) -> int:
     constraint_parts = explode(constraint)
 
     def compare_part(a: str, b: str) -> int:
-        if a == b or a == '*' or b == '*' or a == '':
+        if a == b or a == '*' or b == '*':
             return 0
-        return -1 if int(a) < int(b) else 1
+
+        if a == '' and b != '':
+            return -1
+
+        a = a.zfill(64)
+        b = b.zfill(64)
+        items = sorted([a, b])
+        return -1 if items.index(a) == 0 else 1
 
     comparisons = [
         compare_part(v, c)
