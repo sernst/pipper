@@ -67,4 +67,4 @@ def _create_boto_mocks() -> BotoMocks:
         _get_client,
         {'s3': s3_client}
     )
-    return BotoMocks(session=session, s3_client=s3_client)
+    return BotoMocks(session=session, s3_client=s3_client)  # noqa
