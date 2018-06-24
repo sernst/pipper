@@ -1,6 +1,33 @@
 import semver
 
 
+def explode(version_prefix: str) -> tuple:
+    """
+    Breaks apart a semantic version or partial semantic version string into
+    its constituent elements and returns them as a tuple of strings. Any
+    missing elements will be returned as empty strings.
+
+    :param version_prefix:
+        A semantic version or part of a semantic version, which can include
+        wildcard characters.
+    """
+
+    sections = []
+    searches = [('+', 'split'), ('-', 'split')]
+    remainder = version_prefix.rstrip('.')
+    for separator, operation in searches:
+        parts = remainder.split(separator, 1)
+        remainder = parts[0]
+        section = parts[1] if len(parts) == 2 else ''
+        sections.insert(0, section)
+
+    parts = remainder.split('.')
+    parts.extend(['', ''])
+    sections = parts[:3] + sections
+
+    return tuple(sections)
+
+
 def serialize(version: str) -> str:
     """
     Converts the specified semantic version into a URL/filesystem safe
@@ -27,22 +54,7 @@ def serialize_prefix(version_prefix: str) -> str:
     if version_prefix.startswith('v'):
         return version_prefix
 
-    searches = [
-        ('+', 'split'),
-        ('-', 'split'),
-        ('.', 'rsplit'),
-        ('.', 'rsplit')
-    ]
-
-    sections = []
-    remainder = version_prefix.rstrip('.')
-    for separator, operation in searches:
-        parts = getattr(remainder, operation)(separator, 1)
-        remainder = parts[0]
-        section = parts[1] if len(parts) == 2 else ''
-        sections.insert(0, section.replace('.', '_'))
-    sections.insert(0, remainder)
-
+    sections = [part.replace('.', '_') for part in explode(version_prefix)]
     prefix = '-'.join([section for section in sections[:3] if section])
     if sections[3]:
         prefix += '__pre_{}'.format(sections[3])

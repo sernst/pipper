@@ -5,6 +5,7 @@ from pipper.environment import Environment
 from pipper.versioning.definitions import RemoteVersion
 from pipper.versioning.serde import deserialize
 from pipper.versioning.serde import deserialize_prefix
+from pipper.versioning.serde import explode
 from pipper.versioning.serde import serialize
 from pipper.versioning.serde import serialize_prefix
 
@@ -77,11 +78,11 @@ def compare_constraint(version: str, constraint: str) -> int:
     if version == constraint:
         return 0
 
-    version_parts = version.split('.')
-    constraint_parts = constraint.split('.')
+    version_parts = explode(version)
+    constraint_parts = explode(constraint)
 
     def compare_part(a: str, b: str) -> int:
-        if a == b or a == '*' or b == '*':
+        if a == b or a == '*' or b == '*' or a == '':
             return 0
         return -1 if int(a) < int(b) else 1
 
