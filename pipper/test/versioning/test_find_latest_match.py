@@ -22,7 +22,7 @@ validations = [
 ]
 
 
-@pytest.mark.parameterize('constraint,expected', validations)
+@pytest.mark.parametrize('constraint,expected', validations)
 @patch('pipper.versioning.list_versions')
 def test_find_latest_match(list_versions: MagicMock, constraint: str, expected: str):
     """Should find correct latest match for given constraint"""
