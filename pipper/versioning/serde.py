@@ -11,11 +11,9 @@ def explode(version_prefix: str) -> tuple:
         A semantic version or part of a semantic version, which can include
         wildcard characters.
     """
-
     sections = []
-    searches = [('+', 'split'), ('-', 'split')]
     remainder = version_prefix.rstrip('.')
-    for separator, operation in searches:
+    for separator in ('+', '-'):
         parts = remainder.split(separator, 1)
         remainder = parts[0]
         section = parts[1] if len(parts) == 2 else ''
