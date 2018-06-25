@@ -1,4 +1,5 @@
 import typing
+from urllib.parse import urlparse
 
 from pipper import s3
 from pipper.environment import Environment
@@ -25,6 +26,19 @@ def to_remote_version(
     )
 
 
+def parse_package_url(package_url: str) -> RemoteVersion:
+    """
+    Parses a standard S3 URL of the format:
+
+    `https://s3.amazonaws.com/bucket-name/pipper/package-name/v0-0-18.pipper`
+
+    into a RemoteVersion object.
+    """
+    url_data = urlparse(package_url)
+    parts = url_data.path.strip('/').split('/', 1)
+    return RemoteVersion(bucket=parts[0], key=parts[1], url=package_url)
+
+
 def make_s3_key(package_name: str, package_version: str) -> str:
     """
     Converts a package name and version into a fully-qualified S3 key to the
@@ -43,9 +57,32 @@ def list_versions(
         environment: Environment,
         package_name: str,
         version_prefix: str = None,
+        include_prereleases: bool = False,
         reverse: bool = False
 ) -> typing.List[RemoteVersion]:
-    """..."""
+    """
+    Lists the available versions of the specified package by querying the
+    remote S3 storage and returns those as keys. The results are sorted in
+    order of increasing version unless `reverse` is True in which case the
+    returned list is sorted from highest version to lowest one.
+
+    By default, only stable releases are returned, but pre-releases can be
+    included as well if the `include_prereleases` argument is set to True.
+
+    :param environment:
+        Context object for the currently running command invocation.
+    :param package_name:
+        Name of the pipper package to list versions of.
+    :param version_prefix:
+        A constraining version prefix, which may include wildcard characters.
+        Constraints are hierarchical, which means satisfying the highest
+        level constraint automatically satisfies the subsequent ones.
+        Therefore, a constraint like `1.*.4` would ignore the `4` patch value.
+    :param reverse:
+        Whether or not to reverse the order of the returned results.
+    :param include_prereleases:
+        Whether or not to include pre-release versions in the results.
+    """
     prefix = serialize_prefix(version_prefix or '').split('*')[0]
     key_prefix = 'pipper/{}/v{}'.format(package_name, prefix)
 
@@ -71,11 +108,22 @@ def list_versions(
         if entry['Key'].endswith('.pipper')
     ]
 
-    return sorted(results, reverse=reverse)
+    return [
+        r for r in sorted(results, reverse=reverse)
+        if not r.is_prerelease or include_prereleases
+    ]
 
 
 def compare_constraint(version: str, constraint: str) -> int:
-    """Returns comparison between versions"""
+    """
+    Returns an integer representing the sortable comparison between two
+    versions using standard sorting values:
+        -1 (version is less than constraint)
+        0 (version is equal to constraint)
+        1 (version is greater than constraint)
+    The use-case is to compare a version against a version
+    constraint to determine how the version satisfies the constraint.
+    """
     if version == constraint:
         return 0
 
@@ -95,10 +143,10 @@ def compare_constraint(version: str, constraint: str) -> int:
         if v == '':
             return -1
 
-        v = v.zfill(64)
-        c = c.zfill(64)
-        items = sorted([v, c])
-        return -1 if items.index(v) == 0 else 1
+        a = ''.join([x.zfill(32) for x in v.split('.')])
+        b = ''.join([x.zfill(32) for x in c.split('.')])
+        items = sorted([a, b])
+        return -1 if items.index(a) == 0 else 1
 
     comparisons = (
         compare_part(v, c)
@@ -114,11 +162,33 @@ def find_latest_match(
         version_constraint: str = None,
         include_prereleases: bool = False
 ) -> typing.Union[RemoteVersion, None]:
-    """..."""
-    available = [
-        a for a in list_versions(environment, package_name, reverse=True)
-        if include_prereleases or not a.is_prerelease
-    ]
+    """
+    Searches through available remote versions of the specified package and
+    returns the highest version that satisfies the specified version
+    constraint. If no constraint is specified, the highest version available
+    is returned. If no match is found, a `None` value is returned instead.
+
+    :param environment:
+        Context object for the currently running command invocation.
+    :param package_name:
+        Name of the pipper package to list versions of.
+    :param version_constraint:
+        A constraining version or partial version, which may include wildcard
+        characters. Constraints are hierarchical, which means satisfying the
+        highest level constraint automatically satisfies the subsequent ones.
+        Therefore, a constraint like `=1.*.4` would ignore the `4` patch value.
+        Constraints should be prefixed by an equality such as `<`, `<=`, `=`,
+        `>=` or `>`.
+    :param include_prereleases:
+        Whether or not to include pre-release versions when looking for a
+        match.
+    """
+    available = list_versions(
+        environment=environment,
+        package_name=package_name,
+        reverse=True,
+        include_prereleases=include_prereleases
+    )
 
     if not version_constraint:
         return available[0]

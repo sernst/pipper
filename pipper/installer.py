@@ -15,7 +15,7 @@ def install_pipper_file(
         to_user: bool = False,
         target: str = None,
 ) -> dict:
-    """ 
+    """
     Installs the specified local pipper bundle file.
     
     :param local_source_path:
@@ -30,15 +30,17 @@ def install_pipper_file(
     """
     directory = tempfile.mkdtemp(prefix='pipper-install-')
 
-    extracted = downloader.extract_pipper_file(
-        local_source_path,
-        directory
-    )
-
-    wrapper.install_wheel(extracted['wheel_path'], to_user, target)
-    shutil.rmtree(directory)
-
-    return extracted['metadata']
+    try:
+        extracted = downloader.extract_pipper_file(
+            local_source_path,
+            directory
+        )
+        wrapper.install_wheel(extracted['wheel_path'], to_user, target)
+        return extracted['metadata']
+    except Exception:
+        raise
+    finally:
+        shutil.rmtree(directory)
 
 
 def install_dependencies(env: Environment, dependencies: typing.List[str]):
@@ -55,7 +57,7 @@ def install_dependencies(env: Environment, dependencies: typing.List[str]):
     def do_install(package_name: str):
         try:
             data = downloader.parse_package_id(env, package_name)
-            existing = wrapper.status(data['name'])
+            existing = wrapper.status(data.package_name)
         except Exception:
             existing = wrapper.status(package_name)
         return install(env, package_name) if not existing else None

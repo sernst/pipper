@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 from argparse import ArgumentParser
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
@@ -7,7 +7,6 @@ package_directory = os.path.dirname(os.path.realpath(__file__))
 
 def required_length(minimum: int, maximum: int, optional: bool = False):
     """Returns a custom required length class"""
-
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             is_allowed = (
@@ -15,7 +14,7 @@ def required_length(minimum: int, maximum: int, optional: bool = False):
                 (optional and not len(values))
             )
 
-            if  is_allowed:
+            if is_allowed:
                 setattr(args, self.dest, values)
                 return
 
@@ -32,7 +31,6 @@ def required_length(minimum: int, maximum: int, optional: bool = False):
 
 def read_file(*args) -> str:
     """ """
-
     path = os.path.join(package_directory, *args)
     with open(path, 'r') as f:
         return f.read()
@@ -40,7 +38,6 @@ def read_file(*args) -> str:
 
 def populate_with_common(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.add_argument(
         '-q', '--quiet',
         dest='quiet',
@@ -54,7 +51,6 @@ def populate_with_common(parser: ArgumentParser) -> ArgumentParser:
 
 def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.add_argument(
         '-r', '--repository',
         dest='repository_name',
@@ -86,7 +82,6 @@ def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
 
 def populate_install(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.description = read_file('resources', 'install_action.txt')
 
     parser.add_argument(
@@ -125,7 +120,6 @@ def populate_install(parser: ArgumentParser) -> ArgumentParser:
 
 def populate_bundle(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.description = read_file('resources', 'bundle_action.txt')
 
     parser.add_argument('package_directory')
@@ -139,7 +133,6 @@ def populate_bundle(parser: ArgumentParser) -> ArgumentParser:
 
 def populate_publish(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.description = read_file('resources', 'publish_action.txt')
 
     parser.add_argument(
@@ -171,7 +164,6 @@ def populate_publish(parser: ArgumentParser) -> ArgumentParser:
 
 def populate_info(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.description = read_file('resources', 'info_action.txt')
 
     parser.add_argument(
@@ -192,7 +184,6 @@ def populate_info(parser: ArgumentParser) -> ArgumentParser:
 
 def populate_download(parser: ArgumentParser) -> ArgumentParser:
     """ """
-
     parser.description = read_file('resources', 'download_action.txt')
 
     parser.add_argument(
@@ -297,8 +288,14 @@ def populate_authorize(parser: ArgumentParser) -> ArgumentParser:
 
 
 def parse(cli_args: list = None) -> dict:
-    """ """
+    """
+    Parses command line arguments for consumption by the invoked action
+    and returns the parsed arguments as a dictionary.
 
+    :param cli_args:
+        Overrides the command line argument inputs. By default the sys args
+        will be used.
+    """
     parser = ArgumentParser(
         description=read_file('resources', 'command_description.txt'),
         add_help=True

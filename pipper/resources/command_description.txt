@@ -1,3 +1,4 @@
 Pipper is a package manager built on Python's Pip package installer that
 provides a lightweight package management system for custom packages that
-you do not want distributed through pypi.
+you do not want distributed through pypi that requires only an S3 bucket
+for hosting.

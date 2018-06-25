@@ -1,4 +1,5 @@
 import semver
+
 from pipper.versioning import serde
 
 
@@ -7,10 +8,11 @@ class RemoteVersion(object):
     Data structure for storing information about remote data sources.
     """
 
-    def __init__(self, bucket: str, key: str):
+    def __init__(self, bucket: str, key: str, url: str = None):
         """_ doc..."""
         self._key = key
         self._bucket = bucket
+        self._url = url
 
     @property
     def key(self) -> str:
@@ -33,8 +35,23 @@ class RemoteVersion(object):
         return serde.deserialize(self.key.rsplit('/', 1)[-1].rsplit('.', 1)[0])
 
     @property
+    def is_url_based(self) -> bool:
+        return bool(self._url is not None)
+
+    @property
     def safe_version(self) -> str:
         return self.key.rsplit('/', 1)[-1].rsplit('.', 1)[0]
+
+    @property
+    def url(self) -> str:
+        standard_url = '/'.join([
+            'https://s3.amazonaws.com',
+            self.bucket,
+            'pipper',
+            self.package_name,
+            '{}.pipper'.format(self.safe_version)
+        ])
+        return self._url or standard_url
 
     @property
     def is_prerelease(self) -> bool:
