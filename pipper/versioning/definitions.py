@@ -36,6 +36,10 @@ class RemoteVersion(object):
     def safe_version(self) -> str:
         return self.key.rsplit('/', 1)[-1].rsplit('.', 1)[0]
 
+    @property
+    def is_prerelease(self) -> bool:
+        return self.version.find('-') != -1
+
     def __lt__(self, other):
         return semver.compare(self.version, other.version) < 0
 

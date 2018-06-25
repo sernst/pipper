@@ -42,7 +42,8 @@ def make_s3_key(package_name: str, package_version: str) -> str:
 def list_versions(
         environment: Environment,
         package_name: str,
-        version_prefix: str = None
+        version_prefix: str = None,
+        reverse: bool = False
 ) -> typing.List[RemoteVersion]:
     """..."""
     prefix = serialize_prefix(version_prefix or '').split('*')[0]
@@ -70,7 +71,7 @@ def list_versions(
         if entry['Key'].endswith('.pipper')
     ]
 
-    return sorted(results)
+    return sorted(results, reverse=reverse)
 
 
 def compare_constraint(version: str, constraint: str) -> int:
@@ -81,22 +82,28 @@ def compare_constraint(version: str, constraint: str) -> int:
     version_parts = explode(version)
     constraint_parts = explode(constraint)
 
-    def compare_part(a: str, b: str) -> int:
-        if a == b or a == '*' or b == '*':
+    def compare_part(v: str, c: str) -> int:
+        print(version_parts, constraint_parts)
+        is_equal = (
+            v == c  # direct match
+            or '*' in [v, c]  # one is a wildcard
+            or c == ''  # no constraint specified
+        )
+        if is_equal:
             return 0
 
-        if a == '' and b != '':
+        if v == '':
             return -1
 
-        a = a.zfill(64)
-        b = b.zfill(64)
-        items = sorted([a, b])
-        return -1 if items.index(a) == 0 else 1
+        v = v.zfill(64)
+        c = c.zfill(64)
+        items = sorted([v, c])
+        return -1 if items.index(v) == 0 else 1
 
-    comparisons = [
+    comparisons = (
         compare_part(v, c)
         for v, c in zip(version_parts, constraint_parts)
-    ]
+    )
 
     return next((c for c in comparisons if c != 0), 0)
 
@@ -104,11 +111,14 @@ def compare_constraint(version: str, constraint: str) -> int:
 def find_latest_match(
         environment: Environment,
         package_name: str,
-        version_constraint: str = None
+        version_constraint: str = None,
+        include_prereleases: bool = False
 ) -> typing.Union[RemoteVersion, None]:
     """..."""
-    available = list_versions(environment, package_name)
-    available.reverse()
+    available = [
+        a for a in list_versions(environment, package_name, reverse=True)
+        if include_prereleases or not a.is_prerelease
+    ]
 
     if not version_constraint:
         return available[0]
