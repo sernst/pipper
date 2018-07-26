@@ -157,8 +157,17 @@ def install_from_configs(env: Environment, configs_path: str = None):
         Path to a pipper configuration JSON file. If not specified the default
         path will be used instead
     """
-
+    to_user = env.args.get('pip_user')
     configs = environment.load_configs(configs_path)
+
+    for package in configs.get('pypi', []):
+        print('\n=== PYPI {} ==='.format(package))
+        wrapper.install_pypi(package, to_user=to_user)
+
+    for package in configs.get('conda', []):
+        print('\n=== CONDA {} ==='.format(package))
+        wrapper.install_conda(package, to_user=to_user)
+
     return install_many(env, configs.get('dependencies'))
 
 

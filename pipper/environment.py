@@ -61,9 +61,6 @@ def clean_args(args: dict) -> dict:
 
 def load_repositories() -> dict:
     """ """
-
-
-
     try:
         with open(REPOSITORY_CONFIGS_PATH, 'r') as f:
             return json.load(f)

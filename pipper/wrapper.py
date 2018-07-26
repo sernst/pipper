@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import typing
 
 import pkg_resources
 
@@ -44,6 +45,46 @@ def install_wheel(wheel_path: str, to_user: bool = False):
         '-m', 'pip',
         'install', wheel_path
     ]
+    cmd += ['--user'] if to_user else []
+    print('COMMAND:', ' '.join(cmd))
+
+    result = subprocess.run(cmd)
+    result.check_returncode()
+
+
+def install_pypi(package_name: str, to_user: bool = False):
+    """
+    Installs the specified package from pypi using pip.
+    """
+    cmd = [
+        sys.executable,
+        '-m', 'pip',
+        'install', package_name
+    ]
+    cmd += ['--user'] if to_user else []
+    print('COMMAND:', ' '.join(cmd))
+
+    result = subprocess.run(cmd)
+    result.check_returncode()
+
+
+def install_conda(package: typing.Union[str, dict], to_user: bool = False):
+    """
+    Installs the specified package using conda.
+    """
+    if isinstance(package, dict):
+        name = package['name']
+        channel = package.get('channel')
+    else:
+        name = package
+        channel = None
+
+    cmd = [
+        sys.executable,
+        '-m', 'conda',
+        'install', name
+    ]
+    cmd += ['--channel', channel] if channel else []
     cmd += ['--user'] if to_user else []
     print('COMMAND:', ' '.join(cmd))
 
