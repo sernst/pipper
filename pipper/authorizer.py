@@ -24,7 +24,6 @@ def to_time_delta(age: str) -> timedelta:
         24mins -> 24 minutes
         3hours -> 3 hours
     """
-
     try:
         result = DELTA_REGEX.search(age)
         unit = result.group('unit').lower()
