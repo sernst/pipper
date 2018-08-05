@@ -11,6 +11,7 @@ def test_attributes():
     assert rv.key.find(package) > 0
     assert str(rv).find(package) > 0
     assert str(rv).find(version) > 0
+    assert not rv.is_url_based
 
 
 def test_comparison():
