@@ -1,8 +1,23 @@
 version: "3"
 services:
-  dev:
-    build: .
+  vanilla:
+    build:
+      context: .
+      dockerfile: vanilla.dockerfile
     entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - ~/.aws:/root/.aws
+      - ./:/root/libraries
+      - ~/.pipper:/root/.pipper
+  conda:
+    build:
+      context: .
+      dockerfile: conda.dockerfile
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
     volumes:
       - ~/.aws:/root/.aws
       - ./:/root/libraries

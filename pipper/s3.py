@@ -1,6 +1,5 @@
-import os
-
 import typing
+
 from boto3.session import Session
 from botocore.client import BaseClient
 

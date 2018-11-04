@@ -1,40 +1,22 @@
-import os
 import json
-import zipfile
+import os
 import shutil
-from urllib.parse import urlparse
+import zipfile
 from contextlib import closing
 
 import requests
+
 from pipper import environment
-from pipper import info
 from pipper import versioning
 from pipper import wrapper
 from pipper.environment import Environment
 
 
-def parse_package_url(package_url: str) -> dict:
-    """ """
-
-    url_data = urlparse(package_url)
-    parts = url_data.path.strip('/').split('/')
-    filename = parts[-1]
-    safe_version = filename.rsplit('.', 1)[0]
-
-    return dict(
-        url=package_url,
-        bucket=parts[0],
-        name=parts[-2],
-        safe_version=safe_version,
-        version=versioning.deserialize(safe_version),
-        key='/'.join(parts[1:])
-    )
-
-
 def parse_package_id(
         env: Environment,
         package_id: str,
-        use_latest_version: bool = False
+        use_latest_version: bool = False,
+        include_prereleases: bool = False
 ) -> dict:
     """
     Parses a package id into its constituent name and version information. If
@@ -51,6 +33,9 @@ def parse_package_id(
         name, or a package name and version (NAME:VERSION) combination.
     :param use_latest_version:
         Whether or not to use the latest version.
+    :param include_prereleases:
+        Whether or not to include prelease versions in the list of available
+        packages.
     :return:
         A dictionary containing installation information for the specified
         package. The dictionary has the following fields:
@@ -60,24 +45,37 @@ def parse_package_id(
             - key: S3 key for the remote pipper file where the specified 
                     package name and version reside
     """
-
     if package_id.startswith('https://'):
-        return parse_package_url(package_id)
+        r = versioning.parse_package_url(package_id)
+        return dict(
+            url=r.url,
+            bucket=r.bucket,
+            name=r.package_name,
+            safe_version=r.safe_version,
+            version=r.version,
+            key=r.key
+        )
 
     package_parts = package_id.split(':')
     name = package_parts[0]
     upgrade = use_latest_version or env.args.get('upgrade')
+    unstable = include_prereleases or env.args.get('unstable')
 
     def possible_versions():
-        yield (
-            versioning.find_latest_match(env, *package_parts).version
-            if len(package_parts) > 1 else
-            None
-        )
+        if len(package_parts) > 1:
+            yield versioning.find_latest_match(
+                env,
+                *package_parts,
+                include_prereleases=unstable
+            ).version
         if not upgrade:
             existing = wrapper.status(name)
             yield existing.version if existing else None
-        yield versioning.find_latest_match(env, name).version
+        yield versioning.find_latest_match(
+            env,
+            name,
+            include_prereleases=unstable
+        ).version
 
     try:
         version = next((v for v in possible_versions() if v is not None))

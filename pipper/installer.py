@@ -13,7 +13,7 @@ from pipper.environment import Environment
 def install_pipper_file(
         local_source_path: str,
         to_user: bool = False,
-        target: str = None,
+        target_directory: str = None
 ) -> dict:
     """
     Installs the specified local pipper bundle file.
@@ -23,7 +23,7 @@ def install_pipper_file(
     :param to_user:
         Whether or not to install the package for the user or not. If not a
         user package, the package will be installed globally.
-    :param target:
+    :param target_directory:
         Alternate installation location if specified.
     :return
         The package metadata from the pipper bundle
@@ -35,7 +35,11 @@ def install_pipper_file(
             local_source_path,
             directory
         )
-        wrapper.install_wheel(extracted['wheel_path'], to_user, target)
+        wrapper.install_wheel(
+            wheel_path=extracted['wheel_path'],
+            to_user=to_user,
+            target_directory=target_directory
+        )
         return extracted['metadata']
     except Exception:
         raise
@@ -57,7 +61,7 @@ def install_dependencies(env: Environment, dependencies: typing.List[str]):
     def do_install(package_name: str):
         try:
             data = downloader.parse_package_id(env, package_name)
-            existing = wrapper.status(data.package_name)
+            existing = wrapper.status(data['name'])
         except Exception:
             existing = wrapper.status(package_name)
         return install(env, package_name) if not existing else None
@@ -97,8 +101,8 @@ def install(env: Environment, package_id: str):
         return
 
     remote_version_exists = (
-        is_url or
-        s3.key_exists(env.s3_client, data['bucket'], data['key'])
+        is_url
+        or s3.key_exists(env.s3_client, data['bucket'], data['key'])
     )
 
     if not remote_version_exists:
@@ -124,9 +128,9 @@ def install(env: Environment, package_id: str):
 
     try:
         metadata = install_pipper_file(
-            path,
+            local_source_path=path,
             to_user=env.args.get('pip_user'),
-            target=env.args.get('target'),
+            target_directory=env.args.get('target_directory')
         )
     except Exception:
         raise
@@ -148,7 +152,7 @@ def install_many(env: Environment, package_ids: typing.List[str]):
         A list of package names or package name and version combinations to
         install
     """
-    for package_id in package_ids:
+    for package_id in (package_ids or []):
         install(env, package_id)
 
 
@@ -166,16 +170,24 @@ def install_from_configs(env: Environment, configs_path: str = None):
         path will be used instead
     """
     to_user = env.args.get('pip_user')
-    target = env.args.get('target')
+    target_directory = env.args.get('target_directory')
     configs = environment.load_configs(configs_path)
 
     for package in configs.get('pypi', []):
         print('\n=== PYPI {} ==='.format(package))
-        wrapper.install_pypi(package, to_user=to_user, target=target)
+        wrapper.install_pypi(
+            package_name=package,
+            to_user=to_user,
+            target_directory=target_directory
+        )
 
     for package in configs.get('conda', []):
         print('\n=== CONDA {} ==='.format(package))
-        wrapper.install_conda(package, to_user=to_user, target=target)
+        wrapper.install_conda(
+            package=package,
+            to_user=to_user,
+            target_directory=target_directory
+        )
 
     return install_many(env, configs.get('dependencies'))
 

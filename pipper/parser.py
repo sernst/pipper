@@ -103,12 +103,21 @@ def populate_install(parser: ArgumentParser) -> ArgumentParser:
 
     parser.add_argument(
         '-t', '--target',
-        dest='target',
-        help='Install packages into the specified directory.',
+        dest='target_directory',
+        metavar='<dir>',
+        help=(
+            'Install packages into <dir>. By default this '
+            'will not replace existing files/folders in '
+            '<dir>. Use --upgrade to replace existing '
+            'packages in <dir> with new versions. '
+            'When applied to conda packages, this should '
+            'be the root directory of the conda environment '
+            'where the libraries will be installed.'
+        )
     )
 
     parser.add_argument(
-        '-u', '--upgrade',
+        '-u', '--upgrade', '--update',
         dest='upgrade',
         action='store_true',
         default=False,
