@@ -55,8 +55,6 @@ def install_wheel(
         sys.executable,
         '-m', 'pip',
         'install', wheel_path,
-        '--user' if to_user else None,
-        '--target={}'.format(target) if target else None,
     ]
     cmd += ['--user'] if to_user else []
     cmd += (
@@ -82,8 +80,6 @@ def install_pypi(
         sys.executable,
         '-m', 'pip',
         'install', package_name,
-        '--user' if to_user else None,
-        '--target={}'.format(target) if target else None,
     ]
     cmd += ['--user'] if to_user else []
     cmd += (
