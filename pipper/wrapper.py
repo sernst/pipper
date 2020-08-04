@@ -35,7 +35,11 @@ def status(package_name: str):
         raise
 
 
-def install_wheel(wheel_path: str, to_user: bool = False):
+def install_wheel(
+        wheel_path: str,
+        to_user: bool = False,
+        target: str = None,
+):
     """
     Installs the specified wheel using the pip associated with the
     executing python.
@@ -43,32 +47,44 @@ def install_wheel(wheel_path: str, to_user: bool = False):
     cmd = [
         sys.executable,
         '-m', 'pip',
-        'install', wheel_path
+        'install', wheel_path,
+        '--user' if to_user else None,
+        '--target={}'.format(target) if target else None,
     ]
-    cmd += ['--user'] if to_user else []
+    cmd = [c for c in cmd if c is not None]
     print('COMMAND:', ' '.join(cmd))
 
     result = subprocess.run(cmd)
     result.check_returncode()
 
 
-def install_pypi(package_name: str, to_user: bool = False):
+def install_pypi(
+        package_name: str,
+        to_user: bool = False,
+        target: str = None,
+):
     """
     Installs the specified package from pypi using pip.
     """
     cmd = [
         sys.executable,
         '-m', 'pip',
-        'install', package_name
+        'install', package_name,
+        '--user' if to_user else None,
+        '--target={}'.format(target) if target else None,
     ]
-    cmd += ['--user'] if to_user else []
+    cmd = [c for c in cmd if c is not None]
     print('COMMAND:', ' '.join(cmd))
 
     result = subprocess.run(cmd)
     result.check_returncode()
 
 
-def install_conda(package: typing.Union[str, dict], to_user: bool = False):
+def install_conda(
+        package: typing.Union[str, dict],
+        to_user: bool = False,
+        target: str = None,
+):
     """
     Installs the specified package using conda.
     """
@@ -82,10 +98,11 @@ def install_conda(package: typing.Union[str, dict], to_user: bool = False):
     cmd = [
         sys.executable,
         '-m', 'conda',
-        'install', name
+        'install', name,
     ]
     cmd += ['--channel', channel] if channel else []
     cmd += ['--user'] if to_user else []
+    cmd += ['--target', target] if target else []
     print('COMMAND:', ' '.join(cmd))
 
     result = subprocess.run(cmd)

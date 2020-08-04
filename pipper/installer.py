@@ -10,7 +10,11 @@ from pipper import wrapper
 from pipper.environment import Environment
 
 
-def install_pipper_file(local_source_path: str, to_user: bool = False) -> dict:
+def install_pipper_file(
+        local_source_path: str,
+        to_user: bool = False,
+        target: str = None,
+) -> dict:
     """ 
     Installs the specified local pipper bundle file.
     
@@ -19,6 +23,8 @@ def install_pipper_file(local_source_path: str, to_user: bool = False) -> dict:
     :param to_user:
         Whether or not to install the package for the user or not. If not a
         user package, the package will be installed globally.
+    :param target:
+        Alternate installation location if specified.
     :return
         The package metadata from the pipper bundle
     """
@@ -30,7 +36,7 @@ def install_pipper_file(local_source_path: str, to_user: bool = False) -> dict:
         directory
     )
 
-    wrapper.install_wheel(extracted['wheel_path'], to_user)
+    wrapper.install_wheel(extracted['wheel_path'], to_user, target)
     shutil.rmtree(directory)
 
     return extracted['metadata']
@@ -118,7 +124,11 @@ def install(env: Environment, package_id: str):
     print('DOWNLOAD PATH:', os.path.exists(path), path)
 
     try:
-        metadata = install_pipper_file(path, to_user=env.args.get('pip_user'))
+        metadata = install_pipper_file(
+            path,
+            to_user=env.args.get('pip_user'),
+            target=env.args.get('target'),
+        )
     except Exception:
         raise
     finally:
@@ -158,15 +168,16 @@ def install_from_configs(env: Environment, configs_path: str = None):
         path will be used instead
     """
     to_user = env.args.get('pip_user')
+    target = env.args.get('target')
     configs = environment.load_configs(configs_path)
 
     for package in configs.get('pypi', []):
         print('\n=== PYPI {} ==='.format(package))
-        wrapper.install_pypi(package, to_user=to_user)
+        wrapper.install_pypi(package, to_user=to_user, target=target)
 
     for package in configs.get('conda', []):
         print('\n=== CONDA {} ==='.format(package))
-        wrapper.install_conda(package, to_user=to_user)
+        wrapper.install_conda(package, to_user=to_user, target=target)
 
     return install_many(env, configs.get('dependencies'))
 

@@ -107,6 +107,12 @@ def populate_install(parser: ArgumentParser) -> ArgumentParser:
     )
 
     parser.add_argument(
+        '-t', '--target',
+        dest='target',
+        help='Install packages into the specified directory.',
+    )
+
+    parser.add_argument(
         '-u', '--upgrade',
         dest='upgrade',
         action='store_true',
