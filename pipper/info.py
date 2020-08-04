@@ -9,55 +9,21 @@ from pipper import versioning
 from pipper.environment import Environment
 
 
-def list_remote_package_keys(
-        env: Environment,
-        package_name: str
-) -> typing.List[str]:
-    """ """
-    return [v.key for v in versioning.list_versions(env, package_name)]
-
-
-def list_remote_version_info(env: Environment, package_name: str) -> list:
-    """ """
-
-    def from_key(key: str) -> dict:
-        filename = key.strip('/').split('/')[-1]
-        safe_version = filename.rsplit('.', 1)[0]
-        return dict(
-            name=package_name,
-            safe_version=safe_version,
-            version=versioning.deserialize(safe_version)
-        )
-
-    versions = [
-        from_key(key)
-        for key in list_remote_package_keys(env, package_name)
-    ]
-
-    def compare_versions(a: dict, b: dict) -> int:
-        return semver.compare(a['version'], b['version'])
-
-    return sorted(versions, key=functools.cmp_to_key(compare_versions))
-
-
 def get_package_metadata(
         env: Environment,
         package_name: str,
         package_version: str
 ):
     """ """
-
     response = env.s3_client.head_object(
         Bucket=env.bucket,
         Key=versioning.make_s3_key(package_name, package_version)
     )
-
     return {key: value for key, value in response['Metadata'].items()}
 
 
 def print_local_only(package_name: str):
     """ """
-
     print('[PACKAGE]: {}'.format(package_name))
 
     local_data = wrapper.status(package_name)
@@ -73,14 +39,13 @@ def print_local_only(package_name: str):
 
 def print_with_remote(env: Environment, package_name: str):
     """ """
-
-    remote_versions = list_remote_version_info(env, package_name)
+    remote_versions = versioning.list_versions(env, package_name)
 
     try:
         latest = get_package_metadata(
             env,
             package_name,
-            remote_versions[-1]['version']
+            remote_versions[-1].version
         )
     except IndexError:
         latest = dict(
@@ -125,13 +90,11 @@ def print_with_remote(env: Environment, package_name: str):
 
 
 def run(env: Environment):
-    """ """
-
+    """Executes an info command for the specified environment."""
     local_only = env.args.get('local_only')
     package_name = env.args.get('package_name')
 
     if local_only:
         return print_local_only(package_name)
-
     return print_with_remote(env, package_name)
 

@@ -41,7 +41,6 @@ def show_version(env: Environment):
 
 def run(cli_args: list = None):
     """ """
-
     args = parser.parse(cli_args)
     env = Environment(args)
 

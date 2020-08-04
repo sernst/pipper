@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 import typing
@@ -25,6 +26,12 @@ def update_required(package_name: str, install_version: str) -> bool:
     return current != target
 
 
+def clean_path(path: str) -> str:
+    """Returns a fully-qualified absolute path for the source"""
+    path = os.path.expanduser(path) if path.startswith('~') else path
+    return os.path.realpath(path)
+
+
 def status(package_name: str):
     """ """
     try:
@@ -38,7 +45,7 @@ def status(package_name: str):
 def install_wheel(
         wheel_path: str,
         to_user: bool = False,
-        target: str = None,
+        target_directory: str = None
 ):
     """
     Installs the specified wheel using the pip associated with the
@@ -48,11 +55,14 @@ def install_wheel(
         sys.executable,
         '-m', 'pip',
         'install', wheel_path,
-        '--user' if to_user else None,
-        '--target={}'.format(target) if target else None,
     ]
-    cmd = [c for c in cmd if c is not None]
-    print('COMMAND:', ' '.join(cmd))
+    cmd += ['--user'] if to_user else []
+    cmd += (
+        ['--target={}'.format(clean_path(target_directory))]
+        if target_directory else
+        []
+    )
+    print('[COMMAND]:\n', ' '.join(cmd).replace(' --', '\n  --'))
 
     result = subprocess.run(cmd)
     result.check_returncode()
@@ -61,7 +71,7 @@ def install_wheel(
 def install_pypi(
         package_name: str,
         to_user: bool = False,
-        target: str = None,
+        target_directory: str = None
 ):
     """
     Installs the specified package from pypi using pip.
@@ -70,11 +80,14 @@ def install_pypi(
         sys.executable,
         '-m', 'pip',
         'install', package_name,
-        '--user' if to_user else None,
-        '--target={}'.format(target) if target else None,
     ]
-    cmd = [c for c in cmd if c is not None]
-    print('COMMAND:', ' '.join(cmd))
+    cmd += ['--user'] if to_user else []
+    cmd += (
+        ['--target={}'.format(clean_path(target_directory))]
+        if target_directory else
+        []
+    )
+    print('[COMMAND]:\n', ' '.join(cmd).replace(' --', '\n  --'))
 
     result = subprocess.run(cmd)
     result.check_returncode()
@@ -83,7 +96,7 @@ def install_pypi(
 def install_conda(
         package: typing.Union[str, dict],
         to_user: bool = False,
-        target: str = None,
+        target_directory: str = None
 ):
     """
     Installs the specified package using conda.
@@ -102,8 +115,12 @@ def install_conda(
     ]
     cmd += ['--channel', channel] if channel else []
     cmd += ['--user'] if to_user else []
-    cmd += ['--target', target] if target else []
-    print('COMMAND:', ' '.join(cmd))
+    cmd += (
+        ['--prefix={}'.format(clean_path(target_directory))]
+        if target_directory else
+        []
+    )
+    print('[COMMAND]:\n', ' '.join(cmd).replace(' --', '\n  --'))
 
     result = subprocess.run(cmd)
     result.check_returncode()

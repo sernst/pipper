@@ -1,14 +1,13 @@
-import os
-
 import typing
+
 from boto3.session import Session
+from botocore.client import BaseClient
 
 
 def session_from_credentials_list(
         credentials: list
 ) -> typing.Union[Session, None]:
     """ """
-
     is_valid = (
         credentials and
         len(credentials) > 1 and
@@ -42,7 +41,6 @@ def session_from_profile_name(
 
 def key_exists(s3_client, bucket: str, key: str) -> bool:
     """ """
-
     try:
         response = s3_client.list_objects(
             Bucket=bucket,
@@ -52,3 +50,18 @@ def key_exists(s3_client, bucket: str, key: str) -> bool:
         return len(response['Contents']) > 0
     except Exception:
         return False
+
+
+def list_objects(
+        execution_identifier: str,
+        s3_client: BaseClient,
+        bucket: str,
+        prefix: str,
+        **kwargs
+) -> dict:
+    """..."""
+    return s3_client.list_objects_v2(
+        Bucket=bucket,
+        Prefix=prefix,
+        **kwargs
+    )

@@ -30,7 +30,6 @@ def populate_extra_files():
     """
     Creates a list of non-python data files to include in package distribution
     """
-
     glob_path = os.path.join(MY_DIRECTORY, PACKAGE_NAME, '**', '*.txt')
     return (
         [SETTINGS_PATH] +
