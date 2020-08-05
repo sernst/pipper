@@ -104,7 +104,7 @@ def list_versions(
     results = [
         RemoteVersion(key=entry['Key'], bucket=environment.bucket)
         for response in responses
-        for entry in response.get('Contents')
+        for entry in response.get('Contents') or []
         if entry['Key'].endswith('.pipper')
     ]
 
@@ -189,6 +189,11 @@ def find_latest_match(
         reverse=True,
         include_prereleases=include_prereleases
     )
+
+    if not available:
+        raise ValueError(
+            'No pipper package "{}" was found.'.format(package_name)
+        )
 
     if not version_constraint:
         return available[0]
