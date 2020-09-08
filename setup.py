@@ -45,7 +45,9 @@ setup(
     author='Scott Ernst',
     author_email='swernst@gmail.com',
     license='MIT',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
+    packages=find_packages(
+        exclude=['contrib', 'docs', 'tests*', 'hello_pipper*'],
+    ),
     package_data={'': populate_extra_files()},
     include_package_data=True,
     zip_safe=False,

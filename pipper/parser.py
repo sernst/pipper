@@ -168,6 +168,19 @@ def populate_publish(parser: ArgumentParser) -> ArgumentParser:
         ])
     )
 
+    parser.add_argument(
+        '--acl',
+        dest='s3_object_acl',
+        default='private',
+        help=' '.join([
+            'Set the ACL for the object when it is published to the S3',
+            'bucket. By default this will be "private", which gives access',
+            'to the account that writes the object. For CAA cases handled',
+            'by bucket policies, this should be overridden to',
+            '"bucket-owner-full-control" instead.',
+        ])
+    )
+
     return populate_with_credentials(parser)
 
 

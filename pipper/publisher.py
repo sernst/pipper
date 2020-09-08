@@ -75,7 +75,8 @@ def from_pipper_file(env: Environment, bundle_path: str):
 
     with open(bundle_path, 'rb') as f:
         env.s3_client.put_object(
-            ACL='private',
+            # Allow overriding the ACL from the command.
+            ACL=env.args.get('s3_object_acl') or 'private',
             Body=f,
             Bucket=env.bucket,
             Key=versioning.make_s3_key(
