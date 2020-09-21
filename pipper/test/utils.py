@@ -32,13 +32,6 @@ class PatchSession:
         return patch_session
 
 
-def affect_by_identifier(**identifiers):
-    """..."""
-    def side_effect(execution_identifier: str, *args, **kwargs):
-        return identifiers.get(execution_identifier)
-    return side_effect
-
-
 def make_list_objects_response(
         contents: list = None,
         next_continuation_token: str = None

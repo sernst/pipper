@@ -17,7 +17,11 @@ def get_package_metadata(
     """ """
     response = env.s3_client.head_object(
         Bucket=env.bucket,
-        Key=versioning.make_s3_key(package_name, package_version)
+        Key=versioning.make_s3_key(
+            package_name=package_name,
+            package_version=package_version,
+            root_prefix=env.root_prefix,
+        )
     )
     return {key: value for key, value in response['Metadata'].items()}
 

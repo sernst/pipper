@@ -14,7 +14,8 @@ from pipper.versioning.serde import serialize_prefix
 def to_remote_version(
         package_name: str,
         package_version: str,
-        bucket: str
+        bucket: str,
+        root_prefix: str = 'pipper',
 ) -> RemoteVersion:
     """
     Converts the constituent properties of a pipper remote file into a
@@ -22,7 +23,7 @@ def to_remote_version(
     """
     return RemoteVersion(
         bucket=bucket,
-        key=make_s3_key(package_name, package_version)
+        key=make_s3_key(package_name, package_version, root_prefix=root_prefix),
     )
 
 
@@ -30,7 +31,7 @@ def parse_package_url(package_url: str) -> RemoteVersion:
     """
     Parses a standard S3 URL of the format:
 
-    `https://s3.amazonaws.com/bucket-name/pipper/package-name/v0-0-18.pipper`
+    `https://s3.amazonaws.com/bucket-name/prefix/package-name/v0-0-18.pipper`
 
     into a RemoteVersion object.
     """
@@ -39,7 +40,11 @@ def parse_package_url(package_url: str) -> RemoteVersion:
     return RemoteVersion(bucket=parts[0], key=parts[1], url=package_url)
 
 
-def make_s3_key(package_name: str, package_version: str) -> str:
+def make_s3_key(
+        package_name: str,
+        package_version: str,
+        root_prefix: str = 'pipper',
+) -> str:
     """
     Converts a package name and version into a fully-qualified S3 key to the
     location where the file resides in the hosting S3 bucket. The package
@@ -50,7 +55,7 @@ def make_s3_key(package_name: str, package_version: str) -> str:
         if not package_version.startswith('v') else
         package_version
     )
-    return 'pipper/{}/{}.pipper'.format(package_name, safe_version)
+    return '{}/{}/{}.pipper'.format(root_prefix, package_name, safe_version)
 
 
 def list_versions(
@@ -58,7 +63,7 @@ def list_versions(
         package_name: str,
         version_prefix: str = None,
         include_prereleases: bool = False,
-        reverse: bool = False
+        reverse: bool = False,
 ) -> typing.List[RemoteVersion]:
     """
     Lists the available versions of the specified package by querying the
@@ -84,7 +89,11 @@ def list_versions(
         Whether or not to include pre-release versions in the results.
     """
     prefix = serialize_prefix(version_prefix or '').split('*')[0]
-    key_prefix = 'pipper/{}/v{}'.format(package_name, prefix)
+    key_prefix = '{}/{}/v{}'.format(
+        environment.root_prefix,
+        package_name,
+        prefix,
+    )
 
     responses = []
     while not responses or responses[-1].get('NextContinuationToken'):
@@ -94,7 +103,6 @@ def list_versions(
             {}
         )
         responses.append(s3.list_objects(
-            execution_identifier='list_versions',
             s3_client=environment.s3_client,
             bucket=environment.bucket,
             prefix=key_prefix,
@@ -187,7 +195,7 @@ def find_latest_match(
         environment=environment,
         package_name=package_name,
         reverse=True,
-        include_prereleases=include_prereleases
+        include_prereleases=include_prereleases,
     )
 
     if not available:

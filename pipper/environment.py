@@ -39,8 +39,16 @@ class Environment:
     @property
     def bucket(self) -> str:
         return (
-            self.args.get('bucket') or
-            self.repository.get('bucket')
+            self.args.get('bucket')
+            or self.repository.get('bucket')
+        )
+
+    @property
+    def root_prefix(self) -> str:
+        return (
+            self.args.get('root_prefix')
+            or self.repository.get('root_prefix')
+            or 'pipper'
         )
 
     @property
@@ -165,16 +173,18 @@ def get_session(
     session = next(s for s in generate_session() if s is not None)
     credentials: Credentials = session.get_credentials()
 
-    token = credentials.token
+    access_key = getattr(credentials, 'access_key', None)
+    secret = getattr(credentials, 'secret_key', 'NONE')[:8]
+    token = getattr(credentials, 'token', None)
 
     print('\n[LOADED]: AWS Credentials')
     print('    PROFILE: {}'.format(session.profile_name))
-    print('    ACCESS: {}'.format(credentials.access_key))
-    print('    SECRET: {}...'.format(credentials.secret_key[:8]))
+    print('    ACCESS: {}'.format(access_key))
+    print('    SECRET: {}...'.format(secret))
     print('     TOKEN: {}{}'.format(
         token[:12] if token else 'NONE',
         '...' if token else ''
     ))
-    print('    METHOD: {}'.format(credentials.method))
+    print('    METHOD: {}'.format(getattr(credentials, 'method', 'NONE')))
 
     return session

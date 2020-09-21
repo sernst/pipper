@@ -8,7 +8,12 @@ class RemoteVersion(object):
     Data structure for storing information about remote data sources.
     """
 
-    def __init__(self, bucket: str, key: str, url: str = None):
+    def __init__(
+            self,
+            bucket: str,
+            key: str,
+            url: str = None,
+    ):
         """_ doc..."""
         self._key = key
         self._bucket = bucket
@@ -21,6 +26,14 @@ class RemoteVersion(object):
     @property
     def bucket(self) -> str:
         return self._bucket
+
+    @property
+    def root_prefix(self) -> str:
+        """
+        The top-level key prefix common to all packages in the given pipper
+        repository. By default, the prefix is 'pipper'.
+        """
+        return self._key.rsplit('/', 2)[0]
 
     @property
     def package_name(self) -> str:
@@ -47,7 +60,7 @@ class RemoteVersion(object):
         standard_url = '/'.join([
             'https://s3.amazonaws.com',
             self.bucket,
-            'pipper',
+            self.root_prefix,
             self.package_name,
             '{}.pipper'.format(self.safe_version)
         ])

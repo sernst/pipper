@@ -77,6 +77,12 @@ def populate_with_credentials(parser: ArgumentParser) -> ArgumentParser:
         help='Name of the bucket containing the pipper packages'
     )
 
+    parser.add_argument(
+        '--prefix', '--root-prefix',
+        dest='root_prefix',
+        help='Root repository prefix in S3 where the packages reside.'
+    )
+
     return parser
 
 

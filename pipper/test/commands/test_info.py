@@ -9,9 +9,7 @@ from pipper.test import utils
 @utils.PatchSession()
 def test_info(boto_mocks: utils.BotoMocks, list_objects: MagicMock):
     """..."""
-    list_objects.side_effect = utils.affect_by_identifier(
-        list_versions=utils.make_list_objects_response(contents=[])
-    )
+    list_objects.return_value = utils.make_list_objects_response(contents=[])
     command.run(['info', 'fake-package'])
 
 
@@ -19,7 +17,5 @@ def test_info(boto_mocks: utils.BotoMocks, list_objects: MagicMock):
 @utils.PatchSession()
 def test_info_local(boto_mocks: utils.BotoMocks, list_objects: MagicMock):
     """..."""
-    list_objects.side_effect = utils.affect_by_identifier(
-        list_versions=utils.make_list_objects_response(contents=[])
-    )
+    list_objects.return_value = utils.make_list_objects_response(contents=[])
     command.run(['info', 'fake-package', '--local'])

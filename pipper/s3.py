@@ -53,7 +53,6 @@ def key_exists(s3_client, bucket: str, key: str) -> bool:
 
 
 def list_objects(
-        execution_identifier: str,
         s3_client: BaseClient,
         bucket: str,
         prefix: str,

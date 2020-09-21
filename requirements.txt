@@ -6,3 +6,4 @@ semver
 boto3
 pytest
 pytest-runner
+pytest-cov

@@ -13,7 +13,11 @@ def is_already_published(env: Environment, metadata: dict) -> bool:
     return s3.key_exists(
         s3_client=env.s3_client,
         bucket=env.bucket,
-        key=versioning.make_s3_key(metadata['name'], metadata['version'])
+        key=versioning.make_s3_key(
+            package_name=metadata['name'],
+            package_version=metadata['version'],
+            root_prefix=env.root_prefix,
+        )
     )
 
 
@@ -47,7 +51,6 @@ def get_pipper_files_in(target_directory: str) -> list:
 
 def from_pipper_file(env: Environment, bundle_path: str):
     """ """
-
     metadata = read_metadata(bundle_path)
 
     print('[SYNCING]: "{}"'.format(metadata['name']))
@@ -81,7 +84,8 @@ def from_pipper_file(env: Environment, bundle_path: str):
             Bucket=env.bucket,
             Key=versioning.make_s3_key(
                 metadata['name'],
-                metadata['version']
+                metadata['version'],
+                root_prefix=env.root_prefix,
             ),
             ContentType='application/zip',
             ContentLength=content_length,
@@ -97,7 +101,6 @@ def from_pipper_file(env: Environment, bundle_path: str):
 
 def run(env: Environment):
     """ """
-
     target_path = os.path.realpath(env.args['target_path'])
 
     if not os.path.exists(target_path):

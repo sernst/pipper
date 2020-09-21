@@ -89,7 +89,7 @@ def parse_package_id(
         name=name,
         version=version,
         bucket=env.bucket,
-        key=versioning.make_s3_key(name, version)
+        key=versioning.make_s3_key(name, version, env.root_prefix)
     )
 
 
@@ -145,9 +145,7 @@ def extract_pipper_file(
 
 
 def download_package(env: Environment, package_id: str) -> str:
-    """ 
-    """
-
+    """..."""
     data = parse_package_id(env, package_id)
     directory = os.path.realpath(env.args.get('save_directory') or '.')
     path = os.path.join(directory, '{}-{}.pipper'.format(

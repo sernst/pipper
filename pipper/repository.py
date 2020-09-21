@@ -5,8 +5,7 @@ from pipper.environment import Environment
 
 
 def explode_credentials(credentials: list = None) -> dict:
-    """" """
-
+    """..."""
     if not credentials or not len(credentials) > 2:
         return {}
 
@@ -18,14 +17,14 @@ def explode_credentials(credentials: list = None) -> dict:
 
 
 def add(env: Environment) -> dict:
-    """ """
-
+    """..."""
     configs = environment.load_repositories()
     name = env.args.get('repository_profile_name')
     copy_from = env.args.get('repository_name')
     profile = env.args.get('aws_profile')
     credentials = explode_credentials(env.args.get('aws_credentials'))
     bucket = env.args.get('bucket')
+    root_prefix = env.args.get('root_prefix')
     is_default = env.args.get('default')
 
     if name in configs['repositories']:
@@ -41,6 +40,7 @@ def add(env: Environment) -> dict:
         repo = dict(
             bucket=bucket,
             profile=profile,
+            root_prefix=root_prefix or 'pipper',
             access_key_id=credentials.get('access_key_id'),
             secret_access_key=credentials[1] if credentials else None,
             session_token=credentials[2] if credentials else None
@@ -56,8 +56,7 @@ def add(env: Environment) -> dict:
 
 
 def modify(env: Environment):
-    """ """
-
+    """..."""
     configs = environment.load_repositories()
     name = env.args.get('repository_profile_name')
     existing = configs['repositories'].get(name)
@@ -72,6 +71,7 @@ def modify(env: Environment):
     profile = env.args.get('aws_profile')
     credentials = explode_credentials(env.args.get('aws_credentials'))
     bucket = env.args.get('bucket')
+    root_prefix = env.args.get('root_prefix')
     is_default = env.args.get('default')
 
     if copy_from and copy_from in configs['repository']:
@@ -80,6 +80,7 @@ def modify(env: Environment):
         creds = credentials or existing
         modified = dict(
             bucket=bucket or existing['bucket'],
+            root_prefix=root_prefix or existing['root_prefix'] or 'pipper',
             profile=profile or existing['profile'],
             access_key_id=creds['access_key_id'],
             secret_access_key=creds['secret_access_key'],
@@ -96,8 +97,7 @@ def modify(env: Environment):
 
 
 def remove(env: Environment):
-    """ """
-
+    """..."""
     name = env.args.get('repository_profile_name')
     configs = environment.load_repositories()
 
@@ -115,8 +115,7 @@ def remove(env: Environment):
 
 
 def repo_exists(env: Environment) -> bool:
-    """ """
-
+    """..."""
     name = env.args.get('repository_profile_name')
     configs = environment.load_repositories()
     exists = name in configs['repositories']
@@ -130,8 +129,7 @@ def repo_exists(env: Environment) -> bool:
 
 
 def list_repos():
-    """ """
-
+    """..."""
     configs = environment.load_repositories()
 
     for name in configs['repositories'].keys():
@@ -142,8 +140,7 @@ def list_repos():
 
 
 def run(env: Environment):
-    """ """
-
+    """..."""
     action = env.args.get('repository_action')
     if action == 'add':
         return add(env)
