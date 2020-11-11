@@ -1,3 +1,5 @@
+**NOTE: This project moved to [Pipper @ Gitlab](https://gitlab.com/rocket-boosters/pipper) on 11/11/2020. Consider this repo deprecated as it will eventually be archived.**
+
 # Pipper
 
 __Private Python package manager on an S3 bucket__
